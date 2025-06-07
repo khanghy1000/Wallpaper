@@ -1,4 +1,4 @@
-package com.example.wallpaper;
+package com.example.wallpaper.ui.activity;
 
 import android.os.Bundle;
 
@@ -8,15 +8,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.wallpaper.R;
 import com.example.wallpaper.databinding.ActivityMainBinding;
 
-import javax.inject.Inject;
-
 import dagger.hilt.android.AndroidEntryPoint;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
