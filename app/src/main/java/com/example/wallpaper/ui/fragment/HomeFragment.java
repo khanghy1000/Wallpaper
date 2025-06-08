@@ -1,72 +1,110 @@
 package com.example.wallpaper.ui.fragment;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.example.wallpaper.R;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
+import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
 import com.example.wallpaper.databinding.FragmentHomeBinding;
+import com.example.wallpaper.ui.adapter.WallpaperAdapter;
+import com.example.wallpaper.ui.viewmodel.HomeViewModel;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class HomeFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private FragmentHomeBinding binding;
+    private HomeViewModel viewModel;
+    private WallpaperAdapter adapter;
 
     public HomeFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     public static HomeFragment newInstance() {
-        HomeFragment fragment = new HomeFragment();
-        return fragment;
+        return new HomeFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        binding = FragmentHomeBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setupRecyclerView();
+        setupSwipeRefresh();
+        observeViewModel();
+    }
+
+    private void setupRecyclerView() {
+        adapter = new WallpaperAdapter();
+        
+        // Setup masonry layout with 2 columns for optimal masonry effect
+        StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        // Prevent items from moving between spans to reduce layout shifts
+        layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+        binding.recyclerView.setLayoutManager(layoutManager);
+        binding.recyclerView.setAdapter(adapter);
+        
+        // Disable item animator to prevent visual glitches during scrolling
+        binding.recyclerView.setItemAnimator(null);
+        
+        // Set wallpaper click listener
+        adapter.setOnWallpaperClickListener(new WallpaperAdapter.OnWallpaperClickListener() {
+            @Override
+            public void onWallpaperClick(NetworkWallhavenWallpaper wallpaper) {
+                // TODO: Handle wallpaper click - navigate to detail view
+                Toast.makeText(getContext(), "Clicked: " + wallpaper.getId(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            viewModel.refreshWallpapers();
+        });
+    }
+
+    private void observeViewModel() {
+        viewModel.wallpapers.observe(getViewLifecycleOwner(), wallpapers -> {
+            adapter.setWallpapers(wallpapers);
+        });
+
+        viewModel.loading.observe(getViewLifecycleOwner(), loading -> {
+            binding.swipeRefresh.setRefreshing(loading);
+        });
+
+        viewModel.error.observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Log.e("HomeFragment", "Error loading wallpapers: " + error);
+                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

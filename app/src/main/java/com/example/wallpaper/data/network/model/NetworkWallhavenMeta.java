@@ -2,6 +2,8 @@ package com.example.wallpaper.data.network.model;
 
 import com.squareup.moshi.Json;
 
+import androidx.annotation.Nullable;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +27,7 @@ public class NetworkWallhavenMeta {
     private int total;
 
     @Json(name = "query")
+    @Nullable
     private NetworkWallhavenMetaQuery query;
 
     @Json(name = "seed")

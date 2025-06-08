@@ -17,7 +17,11 @@ public class NetworkWallhavenMetaQuerySerializer {
         // Peek at the next token to determine the type
         JsonReader.Token token = reader.peek();
         
-        if (token == JsonReader.Token.STRING) {
+        if (token == JsonReader.Token.NULL) {
+            // Handle null values
+            reader.nextNull();
+            return null;
+        } else if (token == JsonReader.Token.STRING) {
             // It's a primitive string, deserialize as StringNetworkWallhavenMetaQuery
             String value = reader.nextString();
             return new StringNetworkWallhavenMetaQuery(value);
@@ -46,7 +50,9 @@ public class NetworkWallhavenMetaQuerySerializer {
     
     @ToJson
     public void toJson(JsonWriter writer, NetworkWallhavenMetaQuery query) throws IOException {
-        if (query instanceof StringNetworkWallhavenMetaQuery) {
+        if (query == null) {
+            writer.nullValue();
+        } else if (query instanceof StringNetworkWallhavenMetaQuery) {
             StringNetworkWallhavenMetaQuery stringQuery = (StringNetworkWallhavenMetaQuery) query;
             writer.value(stringQuery.getValue());
         } else if (query instanceof TagNetworkWallhavenMetaQuery) {

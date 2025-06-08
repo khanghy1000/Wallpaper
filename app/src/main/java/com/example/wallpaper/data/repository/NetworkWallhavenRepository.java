@@ -100,25 +100,6 @@ public class NetworkWallhavenRepository {
         }
     }
     
-    // Simplified search method with commonly used parameters
-    public void searchWallpapers(String query, Integer page, WallpapersCallback callback) {
-        searchWallpapers(
-                query,
-                "111", // all categories
-                "100", // SFW only
-                "date_added",
-                "desc",
-                null,
-                null,
-                null,
-                null,
-                null,
-                page,
-                null,
-                callback
-        );
-    }
-    
     // Callback interfaces
     public interface WallpapersCallback {
         void onSuccess(NetworkWallhavenWallpapersResponse response);

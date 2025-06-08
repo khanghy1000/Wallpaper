@@ -11,7 +11,7 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface NetworkWallhavenService {
-
+    // Document: https://wallhaven.cc/help/api#search
     @GET("search")
     Call<NetworkWallhavenWallpapersResponse> search(
             @Query("q") String query,
@@ -28,6 +28,7 @@ public interface NetworkWallhavenService {
             @Query("seed") String seed
     );
 
+    // Document: http://wallhaven.cc/help/api#wallpapers 
     @GET("w/{id}")
     Call<NetworkWallhavenWallpaperResponse> wallpaper(
             @Path("id") String id
