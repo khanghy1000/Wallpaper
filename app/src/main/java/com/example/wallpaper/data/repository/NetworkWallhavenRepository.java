@@ -1,51 +1,37 @@
 package com.example.wallpaper.data.repository;
 
-import com.example.wallpaper.data.network.NetworkWallhavenService;
+import com.example.wallpaper.data.network.NetworkWallhavenDataSource;
 import com.example.wallpaper.data.network.model.NetworkWallhavenTag;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaperResponse;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpapersResponse;
 import com.example.wallpaper.data.repository.util.WallhavenTagsDocumentParser;
+import com.example.wallpaper.model.search.WallhavenSearch;
 
 import org.jsoup.nodes.Document;
 
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-@Singleton
 public class NetworkWallhavenRepository {
     
-    private final NetworkWallhavenService networkWallhavenService;
+    private final NetworkWallhavenDataSource networkWallhavenDataSource;
     
     @Inject
-    public NetworkWallhavenRepository(NetworkWallhavenService networkWallhavenService) {
-        this.networkWallhavenService = networkWallhavenService;
+    public NetworkWallhavenRepository(NetworkWallhavenDataSource networkWallhavenDataSource) {
+        this.networkWallhavenDataSource = networkWallhavenDataSource;
     }
     
     public void searchWallpapers(
-            String query,
-            String categories,
-            String purity,
-            String sorting,
-            String order,
-            String topRange,
-            String atleast,
-            String resolutions,
-            String colors,
-            String ratios,
+            WallhavenSearch search,
             Integer page,
-            String seed,
             WallpapersCallback callback
     ) {
-        Call<NetworkWallhavenWallpapersResponse> call = networkWallhavenService.search(
-                query, categories, purity, sorting, order, topRange,
-                atleast, resolutions, colors, ratios, page, seed
-        );
+        Call<NetworkWallhavenWallpapersResponse> call = networkWallhavenDataSource.search(search, page);
         
         call.enqueue(new Callback<NetworkWallhavenWallpapersResponse>() {
             @Override
@@ -66,7 +52,7 @@ public class NetworkWallhavenRepository {
     }
     
     public void getWallpaper(String id, WallpaperCallback callback) {
-        Call<NetworkWallhavenWallpaperResponse> call = networkWallhavenService.wallpaper(id);
+        Call<NetworkWallhavenWallpaperResponse> call = networkWallhavenDataSource.wallpaper(id);
         
         call.enqueue(new Callback<NetworkWallhavenWallpaperResponse>() {
             @Override
@@ -88,7 +74,7 @@ public class NetworkWallhavenRepository {
     
     public void getPopularTags(PopularTagsCallback callback) {
         try {
-            Document document = networkWallhavenService.popularTags();
+            Document document = networkWallhavenDataSource.popularTags();
             if (document != null) {
                 List<NetworkWallhavenTag> tags = WallhavenTagsDocumentParser.parsePopularTags(document);
                 callback.onSuccess(tags);

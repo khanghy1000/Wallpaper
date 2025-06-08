@@ -10,7 +10,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
-public interface NetworkWallhavenService {
+public interface NetworkWallhavenApi {
     // Document: https://wallhaven.cc/help/api#search
     @GET("search")
     Call<NetworkWallhavenWallpapersResponse> search(

@@ -10,7 +10,7 @@ Wallflow project is a separate wallpaper kotlin jetpack compose project. You sho
 
 - `data/remote/`
 
-    - Contains Retrofit service interfaces for API endpoints.
+    - Contains Retrofit interfaces for API endpoints.
 
 - `data/repository/`
 

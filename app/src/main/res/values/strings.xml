@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">Wallpaper</string>
     <!-- TODO: Remove or change this placeholder text -->
+
+    <!-- WallhavenSearch supporting text strings -->
+    <string name="included_tags_supp">Included: %1$s</string>
+    <string name="excluded_tags_supp">Excluded: %1$s</string>
+    <string name="categories_supp">Categories: %1$s</string>
+    <string name="purities_supp">Purity: %1$s</string>
+    <string name="username_supp">User: %1$s</string>
+    <string name="tag_id_supp">Tag ID: %1$s</string>
+    <string name="wallpaper_id_supp">Similar to: %1$s</string>
 </resources>

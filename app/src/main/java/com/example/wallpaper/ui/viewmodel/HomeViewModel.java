@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpapersResponse;
 import com.example.wallpaper.data.repository.NetworkWallhavenRepository;
+import com.example.wallpaper.model.search.WallhavenFilters;
+import com.example.wallpaper.model.search.WallhavenSearch;
+import com.example.wallpaper.model.search.WallhavenSorting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,20 +42,15 @@ public class HomeViewModel extends ViewModel {
         _loading.setValue(true);
         _error.setValue(null);
         
-        // Load wallpapers with default parameters (no query params as requested)
+        // Create WallhavenSearch with default parameters and random sorting
+        WallhavenFilters filters = new WallhavenFilters();
+        filters.setSorting(WallhavenSorting.RANDOM);
+        
+        WallhavenSearch search = new WallhavenSearch("", filters, null);
+        
         repository.searchWallpapers(
-                null,   // query
-                null,   // categories
-                null,   // purity
-                "random",   // sorting
-                null,   // order
-                null,   // topRange
-                null,   // atleast
-                null,   // resolutions
-                null,   // colors
-                null,   // ratios
-                1,      // page
-                null,   // seed
+                search,
+                1, // page
                 new NetworkWallhavenRepository.WallpapersCallback() {
                     @Override
                     public void onSuccess(NetworkWallhavenWallpapersResponse response) {

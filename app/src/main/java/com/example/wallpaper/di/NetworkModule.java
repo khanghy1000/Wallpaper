@@ -1,7 +1,8 @@
 package com.example.wallpaper.di;
 
 import com.example.wallpaper.Constants;
-import com.example.wallpaper.data.network.NetworkWallhavenService;
+import com.example.wallpaper.data.network.NetworkWallhavenApi;
+import com.example.wallpaper.data.network.NetworkWallhavenDataSource;
 import com.example.wallpaper.data.network.model.serializer.InstantJsonAdapter;
 import com.example.wallpaper.data.network.model.serializer.NetworkWallhavenMetaQuerySerializer;
 import com.squareup.moshi.Moshi;
@@ -38,7 +39,13 @@ public class NetworkModule {
 
     @Provides
     @Singleton
-    public NetworkWallhavenService provideNetworkWallhavenService(Retrofit retrofit) {
-        return retrofit.create(NetworkWallhavenService.class);
+    public NetworkWallhavenApi provideNetworkWallhavenApi(Retrofit retrofit) {
+        return retrofit.create(NetworkWallhavenApi.class);
+    }
+
+    @Provides
+    @Singleton
+    public NetworkWallhavenDataSource provideNetworkWallhavenDataSource(NetworkWallhavenApi networkWallhavenApi) {
+        return new NetworkWallhavenDataSource(networkWallhavenApi);
     }
 }
