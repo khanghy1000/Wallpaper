@@ -35,5 +35,5 @@ public interface NetworkWallhavenApi {
     );
 
     @GET("https://wallhaven.cc/tags/popular")
-    Document popularTags();
+    Call<Document> popularTags();
 }

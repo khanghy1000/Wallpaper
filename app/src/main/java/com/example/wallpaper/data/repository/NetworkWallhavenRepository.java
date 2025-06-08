@@ -73,17 +73,28 @@ public class NetworkWallhavenRepository {
     }
     
     public void getPopularTags(PopularTagsCallback callback) {
-        try {
-            Document document = networkWallhavenDataSource.popularTags();
-            if (document != null) {
-                List<NetworkWallhavenTag> tags = WallhavenTagsDocumentParser.parsePopularTags(document);
-                callback.onSuccess(tags);
-            } else {
-                callback.onError("Failed to fetch popular tags: Document is null");
+        Call<Document> call = networkWallhavenDataSource.popularTags();
+
+        call.enqueue(new Callback<Document>() {
+            @Override
+            public void onResponse(Call<Document> call, Response<Document> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        List<NetworkWallhavenTag> tags = WallhavenTagsDocumentParser.parsePopularTags(response.body());
+                        callback.onSuccess(tags);
+                    } catch (Exception e) {
+                        callback.onError("Error parsing popular tags: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError("Failed to fetch popular tags: " + response.message());
+                }
             }
-        } catch (Exception e) {
-            callback.onError("Error fetching popular tags: " + e.getMessage());
-        }
+
+            @Override
+            public void onFailure(Call<Document> call, Throwable t) {
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
     }
     
     // Callback interfaces

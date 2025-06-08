@@ -1,6 +1,7 @@
 package com.example.wallpaper.di;
 
 import com.example.wallpaper.Constants;
+import com.example.wallpaper.data.network.DocumentConverterFactory;
 import com.example.wallpaper.data.network.NetworkWallhavenApi;
 import com.example.wallpaper.data.network.NetworkWallhavenDataSource;
 import com.example.wallpaper.data.network.model.serializer.InstantJsonAdapter;
@@ -33,6 +34,7 @@ public class NetworkModule {
     public Retrofit provideRetrofit(Moshi moshi) {
         return new Retrofit.Builder()
                 .baseUrl(Constants.BASE_URL)
+                .addConverterFactory(new DocumentConverterFactory())
                 .addConverterFactory(MoshiConverterFactory.create(moshi))
                 .build();
     }

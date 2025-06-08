@@ -64,7 +64,7 @@ public class NetworkWallhavenDataSource {
     /**
      * Get popular tags document.
      */
-    public Document popularTags() {
+    public Call<Document> popularTags() {
         return networkWallhavenApi.popularTags();
     }
     
