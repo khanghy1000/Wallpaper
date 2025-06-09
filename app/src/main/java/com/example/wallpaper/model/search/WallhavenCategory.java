@@ -25,6 +25,19 @@ public enum WallhavenCategory {
         return value;
     }
     
+    public String getDisplayName() {
+        switch (this) {
+            case GENERAL:
+                return "General";
+            case ANIME:
+                return "Anime";
+            case PEOPLE:
+                return "People";
+            default:
+                return value;
+        }
+    }
+    
     public static WallhavenCategory fromValue(String value) {
         switch (value) {
             case "general":

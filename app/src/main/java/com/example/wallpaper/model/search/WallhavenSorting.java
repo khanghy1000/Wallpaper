@@ -22,6 +22,25 @@ public enum WallhavenSorting {
         return value;
     }
     
+    public String getDisplayName() {
+        switch (this) {
+            case TOPLIST:
+                return "Top List";
+            case DATE_ADDED:
+                return "Date Added";
+            case RELEVANCE:
+                return "Relevance";
+            case RANDOM:
+                return "Random";
+            case VIEWS:
+                return "Views";
+            case FAVORITES:
+                return "Favorites";
+            default:
+                return value;
+        }
+    }
+    
     public static WallhavenSorting fromValue(String value) {
         switch (value) {
             case "date_added":

@@ -10,4 +10,37 @@
     <string name="username_supp">User: %1$s</string>
     <string name="tag_id_supp">Tag ID: %1$s</string>
     <string name="wallpaper_id_supp">Similar to: %1$s</string>
+
+    <!-- Search page strings -->
+    <string name="search">Search</string>
+    <string name="search_wallpapers">Search Wallpapers</string>
+    <string name="keyword">Keyword</string>
+    <string name="tags">Tags</string>
+    <string name="categories">Categories</string>
+    <string name="sorting">Sorting</string>
+    <string name="order">Order</string>
+    <string name="top_range">Time Range</string>
+    <string name="minimum_resolution">Minimum Resolution</string>
+    <string name="resolutions">Resolutions</string>
+    <string name="ratios">Ratios</string>
+    <string name="purity">Purity</string>
+    <string name="apply_filters">Search</string>
+    <string name="clear_filters">Reset filters</string>
+    <string name="enter_search_query">Search query</string>
+    <string name="enter_tags">Tags (comma separated)</string>
+    <string name="no_results_found">No results found</string>
+    <string name="search_hint">Search for wallpapers...</string>
+    <string name="any">Any</string>
+    <string name="custom">Custom</string>
+    <string name="width">Width</string>
+    <string name="height">Height</string>
+    <string name="filter_categories">Filter by categories</string>
+    <string name="filter_sorting">Filter by sorting</string>
+    <string name="filter_order">Filter by order</string>
+    <string name="filter_resolutions">Filter by resolutions</string>
+    <string name="filter_ratios">Filter by ratios</string>
+    <string name="filter_purity">Filter by purity</string>
+    <string name="filter">Filter</string>
+    <string name="search_results">Search Results</string>
+    <string name="filters">Filters</string>
 </resources>

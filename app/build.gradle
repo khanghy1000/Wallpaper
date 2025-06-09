@@ -52,6 +52,8 @@ dependencies {
     implementation libs.hilt.android
     annotationProcessor libs.hilt.compiler
 
+    implementation libs.okhttp
+    implementation libs.logging.interceptor
     implementation libs.retrofit
     implementation libs.converter.moshi
     implementation libs.moshi

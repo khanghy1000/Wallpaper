@@ -18,6 +18,17 @@ public enum Order {
         return value;
     }
     
+    public String getDisplayName() {
+        switch (this) {
+            case DESC:
+                return "Descending";
+            case ASC:
+                return "Ascending";
+            default:
+                return value;
+        }
+    }
+    
     public static Order fromValue(String value) {
         return "desc".equals(value) ? DESC : ASC;
     }

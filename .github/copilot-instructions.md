@@ -71,9 +71,9 @@ Wallflow project is a separate wallpaper kotlin jetpack compose project. You sho
 
 - Use ViewBinding in activities and fragments.
 
-### 6. Getters and Setters
+### 6. Lombok
 
-- Use lombok's `@Getter` and `@Setter` annotations for data models.
+- Use lombok's annotations for getters, setters, constructors and builders.
 
 ---
 

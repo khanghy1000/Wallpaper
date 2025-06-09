@@ -1,9 +1,10 @@
 package com.example.wallpaper.model.search;
 
-import android.graphics.Color;
 import android.util.Size;
+
 import com.example.wallpaper.model.Order;
 import com.example.wallpaper.model.Purity;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

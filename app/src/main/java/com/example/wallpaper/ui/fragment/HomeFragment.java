@@ -53,6 +53,7 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         setupRecyclerView();
         setupSwipeRefresh();
+        setupSearchFab();
         observeViewModel();
     }
 
@@ -82,6 +83,13 @@ public class HomeFragment extends Fragment {
     private void setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener(() -> {
             viewModel.refreshWallpapers();
+        });
+    }
+
+    private void setupSearchFab() {
+        binding.fabSearch.setOnClickListener(v -> {
+            // Navigate to SearchActivity
+            startActivity(com.example.wallpaper.ui.activity.SearchActivity.newIntent(requireContext()));
         });
     }
 

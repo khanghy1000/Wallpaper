@@ -41,6 +41,17 @@ public abstract class WallhavenRatio {
             public String getCategoryName() {
                 return categoryName;
             }
+            
+            public String getDisplayName() {
+                switch (this) {
+                    case LANDSCAPE:
+                        return "Landscape";
+                    case PORTRAIT:
+                        return "Portrait";
+                    default:
+                        return categoryName;
+                }
+            }
         }
         
         @Override
