@@ -9,6 +9,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -66,6 +69,7 @@ public class SearchFragment extends Fragment {
         setupUI();
         setupRecyclerView();
         setupClickListeners();
+        setupKeyboardHandling();
         observeViewModel();
     }
 
@@ -277,6 +281,48 @@ public class SearchFragment extends Fragment {
                 requireActivity().finish();
             }
         });
+    }
+
+    private void setupKeyboardHandling() {
+        // Set up WindowInsets listener to detect keyboard visibility
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            Insets systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            
+            // Calculate keyboard height
+            int keyboardHeight = imeInsets.bottom - systemInsets.bottom;
+            
+            // Adjust FAB margin based on keyboard visibility
+            adjustFABMargin(keyboardHeight);
+            
+            return insets;
+        });
+    }
+
+    private void adjustFABMargin(int keyboardHeight) {
+        // Get layout params for both FABs
+        androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams searchFabParams = 
+            (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) binding.btnSearch.getLayoutParams();
+        androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams filterFabParams = 
+            (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) binding.btnFilter.getLayoutParams();
+        
+        // Convert 16dp to pixels for default margin
+        int defaultMarginPx = (int) (16 * getResources().getDisplayMetrics().density);
+        
+        if (keyboardHeight > 0) {
+            // Keyboard is visible - add keyboard height to bottom margin
+            int newBottomMargin = defaultMarginPx + keyboardHeight;
+            searchFabParams.bottomMargin = newBottomMargin;
+            filterFabParams.bottomMargin = newBottomMargin;
+        } else {
+            // Keyboard is hidden - use default margin
+            searchFabParams.bottomMargin = defaultMarginPx;
+            filterFabParams.bottomMargin = defaultMarginPx;
+        }
+        
+        // Apply the updated layout params
+        binding.btnSearch.setLayoutParams(searchFabParams);
+        binding.btnFilter.setLayoutParams(filterFabParams);
     }
 
     private void performSearch() {
