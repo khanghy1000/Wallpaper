@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
 import com.example.wallpaper.databinding.FragmentHomeBinding;
+import com.example.wallpaper.ui.activity.WallpaperViewerActivity;
 import com.example.wallpaper.ui.adapter.WallpaperAdapter;
 import com.example.wallpaper.ui.viewmodel.HomeViewModel;
 
@@ -74,8 +75,8 @@ public class HomeFragment extends Fragment {
         adapter.setOnWallpaperClickListener(new WallpaperAdapter.OnWallpaperClickListener() {
             @Override
             public void onWallpaperClick(NetworkWallhavenWallpaper wallpaper) {
-                // TODO: Handle wallpaper click - navigate to detail view
-                Toast.makeText(getContext(), "Clicked: " + wallpaper.getId(), Toast.LENGTH_SHORT).show();
+                // Navigate to wallpaper viewer
+                WallpaperViewerActivity.start(requireContext(), wallpaper.getPath(), wallpaper.getId());
             }
         });
     }

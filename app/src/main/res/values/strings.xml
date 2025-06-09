@@ -43,4 +43,13 @@
     <string name="filter">Filter</string>
     <string name="search_results">Search Results</string>
     <string name="filters">Filters</string>
+
+    <!-- Wallpaper viewer strings -->
+    <string name="back">Back</string>
+    <string name="set_wallpaper">Set Wallpaper</string>
+    <string name="set_home_screen_wallpaper">Set Home Screen Wallpaper</string>
+    <string name="set_lock_screen_wallpaper">Set Lock Screen Wallpaper</string>
+    <string name="set_both_screens_wallpaper">Set Both Screens Wallpaper</string>
+    <string name="toggle_aspect_ratio">Free Crop</string>
+    <string name="reset_crop">Reset</string>
 </resources>
