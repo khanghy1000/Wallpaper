@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpapersResponse;
 import com.example.wallpaper.data.repository.NetworkWallhavenRepository;
+import com.example.wallpaper.model.Order;
 import com.example.wallpaper.model.search.WallhavenFilters;
 import com.example.wallpaper.model.search.WallhavenSearch;
 import com.example.wallpaper.model.search.WallhavenSorting;
@@ -44,7 +45,8 @@ public class HomeViewModel extends ViewModel {
         
         // Create WallhavenSearch with default parameters and random sorting
         WallhavenFilters filters = new WallhavenFilters();
-        filters.setSorting(WallhavenSorting.RANDOM);
+        filters.setSorting(WallhavenSorting.DATE_ADDED);
+        filters.setOrder(Order.DESC);
         
         WallhavenSearch search = new WallhavenSearch("", filters, null);
         
