@@ -1,9 +1,11 @@
 package com.example.wallpaper.ui.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -82,20 +84,20 @@ public class SearchFragment extends Fragment {
         setupDropdowns();
         setDefaultValues();
     }
-    
+
     // Check if the search query is valid (either keyword or tags must not be empty)
     private boolean isSearchQueryValid() {
         String keyword = binding.etKeyword.getText() != null ? binding.etKeyword.getText().toString().trim() : "";
         String tags = binding.etTags.getText() != null ? binding.etTags.getText().toString().trim() : "";
-        
+
         return !keyword.isEmpty() || !tags.isEmpty();
     }
-    
+
     // Show error on search field if validation fails
     private void showSearchError() {
         binding.tilKeyword.setError("Please enter a search query or tags");
     }
-    
+
     // Clear any displayed errors
     private void clearSearchError() {
         binding.tilKeyword.setError(null);
@@ -128,10 +130,10 @@ public class SearchFragment extends Fragment {
     private void setupResolutionChips() {
         binding.chipGroupResolutions.removeAllViews();
         List<String> commonResolutions = Arrays.asList(
-            "1920x1080", "2560x1440", "3840x2160", "1366x768", 
-            "1600x900", "2048x1536", "1280x720"
+                "1920x1080", "2560x1440", "3840x2160", "1366x768",
+                "1600x900", "2048x1536", "1280x720"
         );
-        
+
         for (String resolution : commonResolutions) {
             Chip chip = new Chip(requireContext());
             chip.setText(resolution);
@@ -144,7 +146,7 @@ public class SearchFragment extends Fragment {
 
     private void setupRatioChips() {
         binding.chipGroupRatios.removeAllViews();
-        
+
         // Add category-based ratios
         for (WallhavenRatio.CategoryWallhavenRatio.Category category : WallhavenRatio.CategoryWallhavenRatio.Category.values()) {
             Chip chip = new Chip(requireContext());
@@ -163,26 +165,26 @@ public class SearchFragment extends Fragment {
             sortingOptions.add(sorting.getDisplayName());
         }
         ArrayAdapter<String> sortingAdapter = new ArrayAdapter<>(
-            requireContext(), 
-            android.R.layout.simple_dropdown_item_1line, 
-            sortingOptions
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                sortingOptions
         );
         binding.actvSorting.setAdapter(sortingAdapter);
         binding.actvSorting.setText(WallhavenSorting.RELEVANCE.getDisplayName(), false);
-        
+
         // Setup TopRange dropdown (only visible when Top List is selected)
         List<String> topRangeOptions = new ArrayList<>();
         for (WallhavenTopRange topRange : WallhavenTopRange.values()) {
             topRangeOptions.add(getTopRangeDisplayName(topRange));
         }
         ArrayAdapter<String> topRangeAdapter = new ArrayAdapter<>(
-            requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
-            topRangeOptions
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                topRangeOptions
         );
         binding.actvTopRange.setAdapter(topRangeAdapter);
         binding.actvTopRange.setText(getTopRangeDisplayName(WallhavenTopRange.ONE_MONTH), false);
-        
+
         // Add listener to sorting dropdown to show/hide top range
         binding.actvSorting.setOnItemClickListener((parent, view, position, id) -> {
             String selectedItem = parent.getItemAtPosition(position).toString();
@@ -196,9 +198,9 @@ public class SearchFragment extends Fragment {
             orderOptions.add(order.getDisplayName());
         }
         ArrayAdapter<String> orderAdapter = new ArrayAdapter<>(
-            requireContext(), 
-            android.R.layout.simple_dropdown_item_1line, 
-            orderOptions
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                orderOptions
         );
         binding.actvOrder.setAdapter(orderAdapter);
         binding.actvOrder.setText(Order.DESC.getDisplayName(), false);
@@ -209,10 +211,10 @@ public class SearchFragment extends Fragment {
         setChipChecked(binding.chipGroupCategories, WallhavenCategory.GENERAL, true);
         setChipChecked(binding.chipGroupCategories, WallhavenCategory.ANIME, true);
         setChipChecked(binding.chipGroupCategories, WallhavenCategory.PEOPLE, true);
-        
+
         // Set default purity chip: SFW only
         setChipChecked(binding.chipGroupPurity, Purity.SFW, true);
-        
+
         // Set initial visibility of top range container
         // Default sorting is RELEVANCE, so hide top range initially
         binding.topRangeContainer.setVisibility(View.GONE);
@@ -231,7 +233,7 @@ public class SearchFragment extends Fragment {
     private void setupChipIcon(Chip chip) {
         // Set initial icon state
         updateChipIcon(chip);
-        
+
         // Add listener to update icon when checked state changes
         chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updateChipIcon(chip);
@@ -248,13 +250,13 @@ public class SearchFragment extends Fragment {
 
     private void setupRecyclerView() {
         adapter = new WallpaperAdapter();
-        
+
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
         binding.recyclerView.setLayoutManager(layoutManager);
         binding.recyclerView.setAdapter(adapter);
         binding.recyclerView.setItemAnimator(null);
-        
+
         adapter.setOnWallpaperClickListener(new WallpaperAdapter.OnWallpaperClickListener() {
             @Override
             public void onWallpaperClick(NetworkWallhavenWallpaper wallpaper) {
@@ -267,11 +269,11 @@ public class SearchFragment extends Fragment {
         binding.btnSearch.setOnClickListener(v -> performSearch());
         binding.btnClearFilters.setOnClickListener(v -> clearAllFilters());
         binding.btnFilter.setOnClickListener(v -> viewModel.hideResults());
-        
+
         binding.swipeRefresh.setOnRefreshListener(() -> {
             viewModel.refreshSearch();
         });
-        
+
         // Setup toolbar navigation
         binding.toolbar.setNavigationOnClickListener(v -> {
             if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
@@ -289,27 +291,27 @@ public class SearchFragment extends Fragment {
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
             Insets systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            
+
             // Calculate keyboard height
             int keyboardHeight = imeInsets.bottom - systemInsets.bottom;
-            
+
             // Adjust FAB margin based on keyboard visibility
             adjustFABMargin(keyboardHeight);
-            
+
             return insets;
         });
     }
 
     private void adjustFABMargin(int keyboardHeight) {
         // Get layout params for both FABs
-        androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams searchFabParams = 
-            (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) binding.btnSearch.getLayoutParams();
-        androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams filterFabParams = 
-            (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) binding.btnFilter.getLayoutParams();
-        
+        androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams searchFabParams =
+                (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) binding.btnSearch.getLayoutParams();
+        androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams filterFabParams =
+                (androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams) binding.btnFilter.getLayoutParams();
+
         // Convert 16dp to pixels for default margin
         int defaultMarginPx = (int) (16 * getResources().getDisplayMetrics().density);
-        
+
         if (keyboardHeight > 0) {
             // Keyboard is visible - add keyboard height to bottom margin
             int newBottomMargin = defaultMarginPx + keyboardHeight;
@@ -320,45 +322,57 @@ public class SearchFragment extends Fragment {
             searchFabParams.bottomMargin = defaultMarginPx;
             filterFabParams.bottomMargin = defaultMarginPx;
         }
-        
+
         // Apply the updated layout params
         binding.btnSearch.setLayoutParams(searchFabParams);
         binding.btnFilter.setLayoutParams(filterFabParams);
     }
 
+    private void hideKeyboard() {
+        View currentFocus = requireActivity().getCurrentFocus();
+        if (currentFocus != null) {
+            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
+        }
+    }
+
     private void performSearch() {
+        // Hide keyboard first
+        hideKeyboard();
+        
         String keyword = binding.etKeyword.getText() != null ? binding.etKeyword.getText().toString().trim() : "";
         String tags = binding.etTags.getText() != null ? binding.etTags.getText().toString().trim() : "";
-        
+
         // Check if both keyword and tags are empty
-        if (!isSearchQueryValid()) {
+        if (binding.actvSorting.getText().toString()
+                .equals(WallhavenSorting.RELEVANCE.getDisplayName()) && !isSearchQueryValid()) {
             showSearchError(); // Only show error when search button is clicked
             Toast.makeText(requireContext(), "Please enter a search query or tags", Toast.LENGTH_SHORT).show();
             return;
         } else {
             clearSearchError(); // Clear any existing error
         }
-        
+
         List<WallhavenCategory> selectedCategories = getSelectedCategories();
         List<Purity> selectedPurities = getSelectedPurities();
         WallhavenSorting selectedSorting = getSelectedSorting();
         Order selectedOrder = getSelectedOrder();
-        
+
         // Only get topRange if sorting is TOPLIST
         WallhavenTopRange selectedTopRange = null;
         if (selectedSorting == WallhavenSorting.TOPLIST) {
             selectedTopRange = getSelectedTopRange();
         }
-        
+
         String minWidth = binding.etMinWidth.getText() != null ? binding.etMinWidth.getText().toString().trim() : "";
         String minHeight = binding.etMinHeight.getText() != null ? binding.etMinHeight.getText().toString().trim() : "";
-        
+
         List<String> selectedResolutions = getSelectedResolutions();
         List<WallhavenRatio> selectedRatios = getSelectedRatios();
-        
-        viewModel.searchWallpapers(keyword, tags, selectedCategories, selectedPurities, 
-                                  selectedSorting, selectedOrder, minWidth, minHeight, 
-                                  selectedResolutions, selectedRatios, selectedTopRange);
+
+        viewModel.searchWallpapers(keyword, tags, selectedCategories, selectedPurities,
+                selectedSorting, selectedOrder, minWidth, minHeight,
+                selectedResolutions, selectedRatios, selectedTopRange);
     }
 
     private List<WallhavenCategory> getSelectedCategories() {
@@ -405,7 +419,7 @@ public class SearchFragment extends Fragment {
 
     private WallhavenTopRange getSelectedTopRange() {
         String selected = binding.actvTopRange.getText().toString();
-        
+
         if (selected.equals("1 Day")) return WallhavenTopRange.ONE_DAY;
         if (selected.equals("3 Days")) return WallhavenTopRange.THREE_DAYS;
         if (selected.equals("1 Week")) return WallhavenTopRange.ONE_WEEK;
@@ -413,7 +427,7 @@ public class SearchFragment extends Fragment {
         if (selected.equals("3 Months")) return WallhavenTopRange.THREE_MONTHS;
         if (selected.equals("6 Months")) return WallhavenTopRange.SIX_MONTHS;
         if (selected.equals("1 Year")) return WallhavenTopRange.ONE_YEAR;
-        
+
         return WallhavenTopRange.ONE_MONTH; // Default
     }
 
@@ -440,32 +454,36 @@ public class SearchFragment extends Fragment {
     }
 
     private void clearAllFilters() {
+        hideKeyboard();
+
         binding.etKeyword.setText("");
         binding.etTags.setText("");
         binding.etMinWidth.setText("");
         binding.etMinHeight.setText("");
-        
+
         // Clear any error state
         clearSearchError();
-        
+
         // Clear all chips
         clearChipGroup(binding.chipGroupCategories);
         clearChipGroup(binding.chipGroupPurity);
         clearChipGroup(binding.chipGroupResolutions);
         clearChipGroup(binding.chipGroupRatios);
-        
+
         // Reset dropdowns and chips to default values
         binding.actvSorting.setText(WallhavenSorting.RELEVANCE.getDisplayName(), false);
         binding.actvOrder.setText(Order.DESC.getDisplayName(), false);
         binding.actvTopRange.setText(getTopRangeDisplayName(WallhavenTopRange.ONE_MONTH), false);
-        
+
         // Update TopRange visibility based on current sorting
         binding.topRangeContainer.setVisibility(View.GONE);
-        
+
         // Set default values after clearing
         setDefaultValues();
-        
+
         viewModel.clearFilters();
+
+        Toast.makeText(requireContext(), "Filters Reset", Toast.LENGTH_SHORT).show();
     }
 
     private void clearChipGroup(ViewGroup chipGroup) {
@@ -497,10 +515,10 @@ public class SearchFragment extends Fragment {
                 // Show results container, hide search form
                 binding.searchForm.setVisibility(View.GONE);
                 binding.resultsContainer.setVisibility(View.VISIBLE);
-                
+
                 // Update toolbar for results view
                 binding.toolbar.setTitle(R.string.search_results);
-                
+
                 // Show filter button, hide apply/clear buttons
                 binding.btnFilter.setVisibility(View.VISIBLE);
                 binding.btnSearch.setVisibility(View.GONE);
