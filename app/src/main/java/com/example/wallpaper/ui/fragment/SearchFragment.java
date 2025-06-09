@@ -25,6 +25,7 @@ import com.example.wallpaper.model.search.WallhavenCategory;
 import com.example.wallpaper.model.search.WallhavenRatio;
 import com.example.wallpaper.model.search.WallhavenSorting;
 import com.example.wallpaper.model.search.WallhavenTopRange;
+import com.example.wallpaper.ui.activity.WallpaperViewerActivity;
 import com.example.wallpaper.ui.adapter.WallpaperAdapter;
 import com.example.wallpaper.ui.viewmodel.SearchViewModel;
 import com.google.android.material.chip.Chip;
@@ -257,7 +258,7 @@ public class SearchFragment extends Fragment {
         adapter.setOnWallpaperClickListener(new WallpaperAdapter.OnWallpaperClickListener() {
             @Override
             public void onWallpaperClick(NetworkWallhavenWallpaper wallpaper) {
-                Toast.makeText(getContext(), "Clicked: " + wallpaper.getId(), Toast.LENGTH_SHORT).show();
+                WallpaperViewerActivity.start(requireContext(), wallpaper.getPath(), wallpaper.getId());
             }
         });
     }

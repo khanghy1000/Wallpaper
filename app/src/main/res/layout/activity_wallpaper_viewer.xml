@@ -9,6 +9,14 @@
     android:id="@+id/main"
     tools:context=".ui.activity.WallpaperViewerActivity">
 
+    <!-- PhotoView for zooming and panning -->
+    <io.getstream.photoview.PhotoView
+        android:id="@+id/wallpaperImageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        />
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -22,15 +30,6 @@
             app:navigationIcon="@drawable/baseline_arrow_back_24"
             app:title=" " />
     </com.google.android.material.appbar.AppBarLayout>
-
-
-    <!-- PhotoView for zooming and panning -->
-    <io.getstream.photoview.PhotoView
-        android:id="@+id/wallpaperImageView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitCenter"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <!-- Set wallpaper FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
