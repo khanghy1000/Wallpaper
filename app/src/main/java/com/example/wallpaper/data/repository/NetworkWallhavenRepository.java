@@ -12,11 +12,13 @@ import org.jsoup.nodes.Document;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+@Singleton
 public class NetworkWallhavenRepository {
     
     private final NetworkWallhavenDataSource networkWallhavenDataSource;
