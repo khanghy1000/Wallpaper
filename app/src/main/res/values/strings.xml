@@ -55,4 +55,10 @@
     <string name="set_both_screens_wallpaper">Set Both Screens Wallpaper</string>
     <string name="toggle_aspect_ratio">Free Crop</string>
     <string name="reset_crop">Reset</string>
+
+    <!-- Local Fragment strings -->
+    <string name="no_local_wallpapers_found">No local wallpapers found</string>
+    <string name="add_some_images_to_your_device">Add some images to your device to see them here</string>
+    <string name="refresh_local_wallpapers">Refresh local wallpapers</string>
+    <string name="local_wallpapers">Local Wallpapers</string>
 </resources>

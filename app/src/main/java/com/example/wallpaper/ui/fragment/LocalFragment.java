@@ -1,71 +1,180 @@
 package com.example.wallpaper.ui.fragment;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.example.wallpaper.R;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link LocalFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.example.wallpaper.databinding.FragmentLocalBinding;
+import com.example.wallpaper.model.LocalWallpaper;
+import com.example.wallpaper.ui.activity.WallpaperViewerActivity;
+import com.example.wallpaper.ui.adapter.LocalWallpaperAdapter;
+import com.example.wallpaper.ui.viewmodel.LocalViewModel;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class LocalFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = "LocalFragment";
+    private static final int STORAGE_PERMISSION_REQUEST_CODE = 1;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private FragmentLocalBinding binding;
+    private LocalViewModel viewModel;
+    private LocalWallpaperAdapter adapter;
 
     public LocalFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment LocalFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static LocalFragment newInstance(String param1, String param2) {
-        LocalFragment fragment = new LocalFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     public static LocalFragment newInstance() {
-        LocalFragment fragment = new LocalFragment();
-        return fragment;
+        return new LocalFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        viewModel = new ViewModelProvider(this).get(LocalViewModel.class);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_local, container, false);
+        binding = FragmentLocalBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setupRecyclerView();
+        setupSwipeRefresh();
+        observeViewModel();
+        checkPermissionsAndLoadWallpapers();
+    }
+
+    private void setupRecyclerView() {
+        adapter = new LocalWallpaperAdapter();
+        
+        // Setup masonry layout with 2 columns for optimal masonry effect
+        StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        // Prevent items from moving between spans to reduce layout shifts
+        layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+        
+        binding.recyclerView.setLayoutManager(layoutManager);
+        binding.recyclerView.setAdapter(adapter);
+        
+        // Disable item animator to prevent visual glitches during scrolling
+        binding.recyclerView.setItemAnimator(null);
+        
+        // Set wallpaper click listener
+        adapter.setOnWallpaperClickListener(new LocalWallpaperAdapter.OnWallpaperClickListener() {
+            @Override
+            public void onWallpaperClick(LocalWallpaper wallpaper) {
+                // Navigate to wallpaper viewer with local image URI
+                WallpaperViewerActivity.start(requireContext(), wallpaper.getUri().toString(), wallpaper.getId());
+            }
+        });
+    }
+
+    private void setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            if (hasStoragePermission()) {
+                viewModel.refreshWallpapers();
+            } else {
+                binding.swipeRefresh.setRefreshing(false);
+                requestStoragePermission();
+            }
+        });
+    }
+
+    private void observeViewModel() {
+        viewModel.wallpapers.observe(getViewLifecycleOwner(), wallpapers -> {
+            Log.d(TAG, "Received " + wallpapers.size() + " wallpapers");
+            adapter.setWallpapers(wallpapers);
+            updateEmptyState(wallpapers.isEmpty());
+        });
+
+        viewModel.loading.observe(getViewLifecycleOwner(), isLoading -> {
+            binding.swipeRefresh.setRefreshing(isLoading);
+            binding.progressIndicator.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        });
+
+        viewModel.error.observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Log.e(TAG, "Error loading wallpapers: " + error);
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateEmptyState(boolean isEmpty) {
+        binding.emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        binding.recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    private void checkPermissionsAndLoadWallpapers() {
+        if (hasStoragePermission()) {
+            viewModel.loadLocalWallpapers();
+        } else {
+            requestStoragePermission();
+        }
+    }
+
+    private boolean hasStoragePermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(requireContext(), 
+                Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return ContextCompat.checkSelfPermission(requireContext(), 
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
+    }
+
+    private void requestStoragePermission() {
+        String[] permissions;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permissions = new String[]{Manifest.permission.READ_MEDIA_IMAGES};
+        } else {
+            permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+        }
+        
+        ActivityCompat.requestPermissions(requireActivity(), permissions, STORAGE_PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, load wallpapers
+                viewModel.loadLocalWallpapers();
+            } else {
+                // Permission denied
+                Toast.makeText(getContext(), "Storage permission is required to view local wallpapers", Toast.LENGTH_LONG).show();
+                updateEmptyState(true);
+            }
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }
