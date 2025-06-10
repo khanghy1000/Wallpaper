@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding.viewPager.setAdapter(new MainPagerAdapter(this));
         binding.viewPager.setOffscreenPageLimit(4);
+        binding.viewPager.setUserInputEnabled(false);
 
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();

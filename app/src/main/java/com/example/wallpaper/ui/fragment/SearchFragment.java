@@ -76,6 +76,7 @@ public class SearchFragment extends Fragment {
         setupClickListeners();
         setupKeyboardHandling();
         observeViewModel();
+        handleIntentData();
     }
 
     private void setupUI() {
@@ -103,6 +104,18 @@ public class SearchFragment extends Fragment {
     // Clear any displayed errors
     private void clearSearchError() {
         binding.tilKeyword.setError(null);
+    }
+
+    private void handleIntentData() {
+        // Check if there's a search tag from the intent
+        String searchTag = requireActivity().getIntent().getStringExtra("search_tag");
+        if (searchTag != null && !searchTag.isEmpty()) {
+            // Pre-fill the tags field with the search tag
+            binding.etTags.setText(searchTag);
+            
+            // Automatically perform the search
+            performSearch();
+        }
     }
 
     private void setupCategoryChips() {
@@ -304,13 +317,15 @@ public class SearchFragment extends Fragment {
 
         // Setup toolbar navigation
         binding.toolbar.setNavigationOnClickListener(v -> {
-            if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
-                // If showing results, go back to search form
-                viewModel.hideResults();
-            } else {
-                // If showing search form, close activity
-                requireActivity().finish();
-            }
+//            if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
+//                // If showing results, go back to search form
+//                viewModel.hideResults();
+//            } else {
+//                // If showing search form, close activity
+//                requireActivity().finish();
+//            }
+
+            requireActivity().finish();
         });
     }
 

@@ -1,5 +1,6 @@
 package com.example.wallpaper.ui.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,13 +12,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.example.wallpaper.data.network.model.NetworkWallhavenTag;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
 import com.example.wallpaper.databinding.FragmentHomeBinding;
+import com.example.wallpaper.ui.activity.SearchActivity;
 import com.example.wallpaper.ui.activity.WallpaperViewerActivity;
-import com.example.wallpaper.ui.adapter.WallpaperAdapter;
+import com.example.wallpaper.ui.adapter.HomeAdapter;
 import com.example.wallpaper.ui.viewmodel.HomeViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -27,7 +31,7 @@ public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
     private HomeViewModel viewModel;
-    private WallpaperAdapter adapter;
+    private HomeAdapter adapter;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -60,12 +64,13 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        adapter = new WallpaperAdapter();
+        adapter = new HomeAdapter();
         
         // Setup masonry layout with 2 columns for optimal masonry effect
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         // Prevent items from moving between spans to reduce layout shifts
         layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+        
         binding.recyclerView.setLayoutManager(layoutManager);
         binding.recyclerView.setAdapter(adapter);
         
@@ -73,11 +78,21 @@ public class HomeFragment extends Fragment {
         binding.recyclerView.setItemAnimator(null);
         
         // Set wallpaper click listener
-        adapter.setOnWallpaperClickListener(new WallpaperAdapter.OnWallpaperClickListener() {
+        adapter.setOnWallpaperClickListener(new HomeAdapter.OnWallpaperClickListener() {
             @Override
             public void onWallpaperClick(NetworkWallhavenWallpaper wallpaper) {
                 // Navigate to wallpaper viewer
                 WallpaperViewerActivity.start(requireContext(), wallpaper.getPath(), wallpaper.getId());
+            }
+        });
+        
+        // Set tag click listener
+        adapter.setOnTagClickListener(new HomeAdapter.OnTagClickListener() {
+            @Override
+            public void onTagClick(NetworkWallhavenTag tag) {
+                // Navigate to SearchActivity with the selected tag
+                Intent intent = SearchActivity.newIntentWithTag(requireContext(), tag.getName());
+                startActivity(intent);
             }
         });
         
@@ -125,9 +140,25 @@ public class HomeFragment extends Fragment {
             if (adapter.getItemCount() == 0) {
                 // First load or refresh - set all wallpapers
                 adapter.setWallpapers(wallpapers);
+                // Ensure we start at the top
+                if (wallpapers != null && !wallpapers.isEmpty()) {
+                    binding.recyclerView.scrollToPosition(0);
+                }
             } else {
                 // This is for pagination - the ViewModel already handles adding to the list
                 adapter.setWallpapers(wallpapers);
+            }
+        });
+
+        viewModel.popularTags.observe(getViewLifecycleOwner(), tags -> {
+            boolean hadTags = adapter.isShowingPopularTags();
+            
+            adapter.setPopularTags(tags);
+            
+            // If we just added popular tags for the first time and there are wallpapers,
+            // scroll to top to ensure tags are visible
+            if (!hadTags && tags != null && !tags.isEmpty() && adapter.getItemCount() > 1) {
+                binding.recyclerView.scrollToPosition(0);
             }
         });
 
@@ -138,6 +169,10 @@ public class HomeFragment extends Fragment {
         viewModel.loadingMore.observe(getViewLifecycleOwner(), loadingMore -> {
             // You can add a loading indicator at the bottom if needed
             // For now, we just observe it to prevent multiple simultaneous requests
+        });
+
+        viewModel.loadingTags.observe(getViewLifecycleOwner(), loadingTags -> {
+            // You can add a loading indicator for tags if needed
         });
 
         viewModel.error.observe(getViewLifecycleOwner(), error -> {

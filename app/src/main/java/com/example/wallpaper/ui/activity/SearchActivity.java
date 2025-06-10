@@ -26,6 +26,12 @@ public class SearchActivity extends AppCompatActivity {
         return new Intent(context, SearchActivity.class);
     }
 
+    public static Intent newIntentWithTag(Context context, String tag) {
+        Intent intent = new Intent(context, SearchActivity.class);
+        intent.putExtra("search_tag", tag);
+        return intent;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

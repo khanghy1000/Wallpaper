@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.wallpaper.data.network.model.NetworkWallhavenTag;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpapersResponse;
 import com.example.wallpaper.data.repository.NetworkWallhavenRepository;
@@ -36,6 +37,13 @@ public class HomeViewModel extends ViewModel {
     private final MutableLiveData<String> _error = new MutableLiveData<>();
     public final LiveData<String> error = _error;
     
+    // Popular tags LiveData
+    private final MutableLiveData<List<NetworkWallhavenTag>> _popularTags = new MutableLiveData<>(new ArrayList<>());
+    public final LiveData<List<NetworkWallhavenTag>> popularTags = _popularTags;
+    
+    private final MutableLiveData<Boolean> _loadingTags = new MutableLiveData<>(false);
+    public final LiveData<Boolean> loadingTags = _loadingTags;
+    
     private int currentPage = 1;
     private boolean hasMorePages = true;
     private boolean isLoadingMore = false;
@@ -44,6 +52,7 @@ public class HomeViewModel extends ViewModel {
     public HomeViewModel(NetworkWallhavenRepository repository) {
         this.repository = repository;
         loadWallpapers();
+        loadPopularTags();
     }
     
     public void loadWallpapers() {
@@ -141,5 +150,29 @@ public class HomeViewModel extends ViewModel {
     
     public void refreshWallpapers() {
         loadWallpapers();
+    }
+    
+    public void loadPopularTags() {
+        _loadingTags.setValue(true);
+        
+        repository.getPopularTags(new NetworkWallhavenRepository.PopularTagsCallback() {
+            @Override
+            public void onSuccess(List<NetworkWallhavenTag> tags) {
+                _loadingTags.setValue(false);
+                // Show all available tags
+                _popularTags.setValue(tags);
+            }
+            
+            @Override
+            public void onError(String error) {
+                _loadingTags.setValue(false);
+                // Don't show error for tags, just keep empty list
+                _popularTags.setValue(new ArrayList<>());
+            }
+        });
+    }
+    
+    public void refreshPopularTags() {
+        loadPopularTags();
     }
 }
