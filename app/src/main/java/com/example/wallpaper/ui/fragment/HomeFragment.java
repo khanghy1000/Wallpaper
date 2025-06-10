@@ -137,16 +137,12 @@ public class HomeFragment extends Fragment {
 
     private void observeViewModel() {
         viewModel.wallpapers.observe(getViewLifecycleOwner(), wallpapers -> {
-            if (adapter.getItemCount() == 0) {
-                // First load or refresh - set all wallpapers
-                adapter.setWallpapers(wallpapers);
-                // Ensure we start at the top
-                if (wallpapers != null && !wallpapers.isEmpty()) {
-                    binding.recyclerView.scrollToPosition(0);
-                }
-            } else {
-                // This is for pagination - the ViewModel already handles adding to the list
-                adapter.setWallpapers(wallpapers);
+            // Always use setWallpapers - the adapter will now handle pagination vs refresh intelligently
+            adapter.setWallpapers(wallpapers);
+            
+            // Only scroll to top for complete refresh (when it's the first load or after refresh)
+            if (Boolean.TRUE.equals(viewModel.loading.getValue()) && wallpapers != null && !wallpapers.isEmpty()) {
+                binding.recyclerView.scrollToPosition(0);
             }
         });
 

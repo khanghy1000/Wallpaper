@@ -57,16 +57,59 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void setWallpapers(List<NetworkWallhavenWallpaper> wallpapers) {
         List<NetworkWallhavenWallpaper> newWallpapers = wallpapers != null ? wallpapers : new ArrayList<>();
         
-        // Only update if the data has actually changed to prevent unnecessary refreshes
-        if (!this.wallpapers.equals(newWallpapers)) {
-            this.wallpapers = newWallpapers;
-            notifyDataSetChanged();
+        // If the lists are identical, don't do anything
+        if (this.wallpapers.equals(newWallpapers)) {
+            return;
+        }
+        
+        int oldSize = this.wallpapers.size();
+        int newSize = newWallpapers.size();
+        
+        // Check if this looks like pagination (new list contains all old items plus more)
+        boolean isPagination = newSize > oldSize && 
+                               oldSize > 0 && 
+                               newWallpapers.subList(0, oldSize).equals(this.wallpapers);
+        
+        this.wallpapers = newWallpapers;
+        
+        if (isPagination) {
+            // This is pagination - just add the new items
+            int startPosition = (showPopularTags ? 1 : 0) + oldSize;
+            int addedCount = newSize - oldSize;
+            notifyItemRangeInserted(startPosition, addedCount);
+        } else {
+            // This is a complete refresh - use notifyDataSetChanged only for wallpapers section
+            if (oldSize == 0 && newSize > 0) {
+                // First load
+                int startPosition = showPopularTags ? 1 : 0;
+                notifyItemRangeInserted(startPosition, newSize);
+            } else if (newSize == 0 && oldSize > 0) {
+                // Clear all
+                int startPosition = showPopularTags ? 1 : 0;
+                notifyItemRangeRemoved(startPosition, oldSize);
+            } else {
+                // Complete refresh - but only notify wallpaper items, not the header
+                int startPosition = showPopularTags ? 1 : 0;
+                if (oldSize > 0) {
+                    notifyItemRangeRemoved(startPosition, oldSize);
+                }
+                if (newSize > 0) {
+                    notifyItemRangeInserted(startPosition, newSize);
+                }
+            }
         }
     }
     
     public void setPopularTags(List<NetworkWallhavenTag> tags) {
-        this.popularTags = tags != null ? tags : new ArrayList<>();
-        boolean shouldShow = !this.popularTags.isEmpty();
+        List<NetworkWallhavenTag> newTags = tags != null ? tags : new ArrayList<>();
+        boolean shouldShow = !newTags.isEmpty();
+        
+        // Check if tags actually changed to avoid unnecessary updates
+        if (this.popularTags.equals(newTags) && showPopularTags == shouldShow) {
+            return; // No change needed
+        }
+        
+        this.popularTags = newTags;
         
         if (showPopularTags != shouldShow) {
             showPopularTags = shouldShow;
@@ -77,15 +120,6 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         } else if (shouldShow) {
             notifyItemChanged(0); // Update existing header
-        }
-    }
-    
-    public void addWallpapers(List<NetworkWallhavenWallpaper> newWallpapers) {
-        if (newWallpapers != null && !newWallpapers.isEmpty()) {
-            int oldSize = this.wallpapers.size();
-            this.wallpapers.addAll(newWallpapers);
-            int startPosition = (showPopularTags ? 1 : 0) + oldSize;
-            notifyItemRangeInserted(startPosition, newWallpapers.size());
         }
     }
     
@@ -162,6 +196,7 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     
     class PopularTagsViewHolder extends RecyclerView.ViewHolder {
         private final ItemPopularTagsHeaderBinding binding;
+        private List<NetworkWallhavenTag> lastBoundTags = new ArrayList<>();
         
         public PopularTagsViewHolder(ItemPopularTagsHeaderBinding binding) {
             super(binding.getRoot());
@@ -169,6 +204,13 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         
         public void bind(List<NetworkWallhavenTag> tags) {
+            // Only update if tags have actually changed
+            if (tags.equals(lastBoundTags)) {
+                return; // No change needed
+            }
+            
+            lastBoundTags = new ArrayList<>(tags);
+            
             // Clear previous tags
             binding.linearPopularTags.removeAllViews();
             
