@@ -158,13 +158,18 @@ public class SearchViewModel extends ViewModel {
         _loading.setValue(true);
         _error.setValue(null);
         
+        // Clear previous results and show loading state
+        _wallpapers.setValue(null); // Set to null to indicate loading state
+        
+        // Show results container immediately when starting search to show center loading
+        _showResults.setValue(true);
+        
         repository.searchWallpapers(currentSearch, currentPage, new NetworkWallhavenRepository.WallpapersCallback() {
             @Override
             public void onSuccess(NetworkWallhavenWallpapersResponse response) {
                 _loading.setValue(false);
                 if (response != null && response.getData() != null) {
                     _wallpapers.setValue(response.getData());
-                    _showResults.setValue(true);
                     
                     // Check if there are more pages
                     if (response.getMeta() != null) {
@@ -172,7 +177,6 @@ public class SearchViewModel extends ViewModel {
                     }
                 } else {
                     _wallpapers.setValue(new ArrayList<>());
-                    _showResults.setValue(true);
                     hasMorePages = false;
                 }
             }
@@ -182,7 +186,6 @@ public class SearchViewModel extends ViewModel {
                 _loading.setValue(false);
                 _error.setValue("Failed to search wallpapers: " + error);
                 _wallpapers.setValue(new ArrayList<>());
-                _showResults.setValue(true);
                 hasMorePages = false;
             }
         });
@@ -234,8 +237,43 @@ public class SearchViewModel extends ViewModel {
             currentPage = 1;
             hasMorePages = true;
             isLoadingMore = false;
-            performSearch();
+            performRefreshSearch();
         }
+    }
+    
+    private void performRefreshSearch() {
+        if (isLoadingMore) return;
+        
+        _loading.setValue(true);
+        _error.setValue(null);
+        
+        // Don't clear wallpapers for refresh - keep showing current results during refresh
+        
+        repository.searchWallpapers(currentSearch, currentPage, new NetworkWallhavenRepository.WallpapersCallback() {
+            @Override
+            public void onSuccess(NetworkWallhavenWallpapersResponse response) {
+                _loading.setValue(false);
+                if (response != null && response.getData() != null) {
+                    _wallpapers.setValue(response.getData());
+                    
+                    // Check if there are more pages
+                    if (response.getMeta() != null) {
+                        hasMorePages = response.getMeta().getCurrentPage() < response.getMeta().getLastPage();
+                    }
+                } else {
+                    _wallpapers.setValue(new ArrayList<>());
+                    hasMorePages = false;
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                _loading.setValue(false);
+                _error.setValue("Failed to search wallpapers: " + error);
+                _wallpapers.setValue(new ArrayList<>());
+                hasMorePages = false;
+            }
+        });
     }
 
     public void clearFilters() {

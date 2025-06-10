@@ -45,6 +45,7 @@ public class SearchFragment extends Fragment {
     private FragmentSearchBinding binding;
     private SearchViewModel viewModel;
     private WallpaperAdapter adapter;
+    private boolean isSwipeRefreshing = false;
 
     public SearchFragment() {
         // Required empty public constructor
@@ -297,6 +298,7 @@ public class SearchFragment extends Fragment {
         binding.btnFilter.setOnClickListener(v -> viewModel.hideResults());
 
         binding.swipeRefresh.setOnRefreshListener(() -> {
+            isSwipeRefreshing = true;
             viewModel.refreshSearch();
         });
 
@@ -521,13 +523,48 @@ public class SearchFragment extends Fragment {
 
     private void observeViewModel() {
         viewModel.wallpapers.observe(getViewLifecycleOwner(), wallpapers -> {
-            adapter.setWallpapers(wallpapers);
-            updateUIState(wallpapers.isEmpty());
+            if (wallpapers != null) {
+                adapter.setWallpapers(wallpapers);
+                updateUIState(wallpapers.isEmpty());
+            } else {
+                // Loading state - clear adapter and show loading UI
+                adapter.setWallpapers(new ArrayList<>());
+                updateUIState(false); // Pass false because we're in loading state, not empty state
+                
+                // Ensure center loading indicator is visible during loading state
+                if (Boolean.TRUE.equals(viewModel.showResults.getValue()) && 
+                    Boolean.TRUE.equals(viewModel.loading.getValue()) && 
+                    !isSwipeRefreshing) {
+                    binding.progressIndicator.setIndeterminate(true);
+                    binding.progressIndicator.setVisibility(View.VISIBLE);
+                }
+            }
         });
 
         viewModel.loading.observe(getViewLifecycleOwner(), loading -> {
-            binding.swipeRefresh.setRefreshing(loading);
-            binding.progressIndicator.setVisibility(loading ? View.VISIBLE : View.GONE);
+            // Only show center loading when switching from filter to results (when results are showing)
+            // Don't show center loading during swipe refresh
+            if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
+                // Show center loading indicator only if not doing swipe refresh AND wallpapers is null (loading state)
+                boolean isLoadingState = loading && !isSwipeRefreshing && viewModel.wallpapers.getValue() == null;
+                if (isLoadingState) {
+                    binding.progressIndicator.setIndeterminate(true);
+                    binding.progressIndicator.setVisibility(View.VISIBLE);
+                } else {
+                    binding.progressIndicator.setVisibility(View.GONE);
+                }
+                // Handle swipe refresh loading
+                binding.swipeRefresh.setRefreshing(loading && isSwipeRefreshing);
+            } else {
+                // Hide center loading when not showing results (in filter UI)
+                binding.progressIndicator.setVisibility(View.GONE);
+                binding.swipeRefresh.setRefreshing(false);
+            }
+            
+            // Reset swipe refresh flag when loading completes
+            if (!loading) {
+                isSwipeRefreshing = false;
+            }
         });
 
         viewModel.loadingMore.observe(getViewLifecycleOwner(), loadingMore -> {
@@ -554,6 +591,21 @@ public class SearchFragment extends Fragment {
                 binding.btnFilter.setVisibility(View.VISIBLE);
                 binding.btnSearch.setVisibility(View.GONE);
                 binding.btnClearFilters.setVisibility(View.GONE);
+                
+                // Scroll to top when showing results
+                binding.recyclerView.scrollToPosition(0);
+                
+                // Update UI state for results view
+                List<NetworkWallhavenWallpaper> wallpapers = viewModel.wallpapers.getValue();
+                if (wallpapers != null) {
+                    updateUIState(wallpapers.isEmpty());
+                } else {
+                    updateUIState(false); // Loading state
+                    // Explicitly show center loading when transitioning to results with null wallpapers
+                    if (Boolean.TRUE.equals(viewModel.loading.getValue()) && !isSwipeRefreshing) {
+                        binding.progressIndicator.setVisibility(View.VISIBLE);
+                    }
+                }
             } else {
                 // Show search form, hide results container
                 binding.searchForm.setVisibility(View.VISIBLE);
@@ -566,6 +618,16 @@ public class SearchFragment extends Fragment {
                 binding.btnFilter.setVisibility(View.GONE);
                 binding.btnSearch.setVisibility(View.VISIBLE);
                 binding.btnClearFilters.setVisibility(View.VISIBLE);
+                
+                // Hide progress indicator when going back to filter UI
+                binding.progressIndicator.setVisibility(View.GONE);
+                
+                // Reset swipe refresh state
+                isSwipeRefreshing = false;
+                binding.swipeRefresh.setRefreshing(false);
+                
+                // Update UI state for filter view (this will hide empty state and RecyclerView)
+                updateUIState(false);
             }
         });
     }
@@ -592,12 +654,27 @@ public class SearchFragment extends Fragment {
     }
 
     private void updateUIState(boolean isEmpty) {
-        if (isEmpty && Boolean.TRUE.equals(viewModel.showResults.getValue())) {
-            binding.emptyState.setVisibility(View.VISIBLE);
-            binding.swipeRefresh.setVisibility(View.GONE);
-        } else if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
+        // Only manage empty state when showing results
+        if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
+            // Check if wallpapers is null (loading state)
+            List<NetworkWallhavenWallpaper> wallpapers = viewModel.wallpapers.getValue();
+            if (wallpapers == null) {
+                // Loading state - hide both empty state and RecyclerView, center loading will show
+                binding.emptyState.setVisibility(View.GONE);
+                binding.swipeRefresh.setVisibility(View.GONE);
+            } else if (isEmpty) {
+                // Show empty state, hide RecyclerView
+                binding.emptyState.setVisibility(View.VISIBLE);
+                binding.swipeRefresh.setVisibility(View.GONE);
+            } else {
+                // Show RecyclerView, hide empty state
+                binding.emptyState.setVisibility(View.GONE);
+                binding.swipeRefresh.setVisibility(View.VISIBLE);
+            }
+        } else {
+            // When not showing results (in filter UI), hide both empty state and RecyclerView
             binding.emptyState.setVisibility(View.GONE);
-            binding.swipeRefresh.setVisibility(View.VISIBLE);
+            binding.swipeRefresh.setVisibility(View.GONE);
         }
     }
 
