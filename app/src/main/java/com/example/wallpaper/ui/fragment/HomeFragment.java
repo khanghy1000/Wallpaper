@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.example.wallpaper.data.network.model.NetworkWallhavenTag;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
 import com.example.wallpaper.databinding.FragmentHomeBinding;
-import com.example.wallpaper.ui.activity.SearchActivity;
+import com.example.wallpaper.ui.activity.SearchFilterActivity;
 import com.example.wallpaper.ui.activity.WallpaperViewerActivity;
 import com.example.wallpaper.ui.adapter.HomeAdapter;
 import com.example.wallpaper.ui.viewmodel.HomeViewModel;
@@ -90,8 +90,8 @@ public class HomeFragment extends Fragment {
         adapter.setOnTagClickListener(new HomeAdapter.OnTagClickListener() {
             @Override
             public void onTagClick(NetworkWallhavenTag tag) {
-                // Navigate to SearchActivity with the selected tag
-                Intent intent = SearchActivity.newIntentWithTag(requireContext(), tag.getName());
+                // Navigate to SearchFilterActivity with the selected tag
+                Intent intent = SearchFilterActivity.newIntentWithTag(requireContext(), tag.getName());
                 startActivity(intent);
             }
         });
@@ -130,8 +130,8 @@ public class HomeFragment extends Fragment {
 
     private void setupSearchFab() {
         binding.fabSearch.setOnClickListener(v -> {
-            // Navigate to SearchActivity
-            startActivity(com.example.wallpaper.ui.activity.SearchActivity.newIntent(requireContext()));
+            // Navigate to SearchFilterActivity
+            startActivity(SearchFilterActivity.newIntent(requireContext()));
         });
     }
 

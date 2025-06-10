@@ -27,7 +27,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
 @HiltViewModel
-public class SearchViewModel extends ViewModel {
+public class SearchResultsViewModel extends ViewModel {
 
     private final NetworkWallhavenRepository repository;
 
@@ -52,7 +52,7 @@ public class SearchViewModel extends ViewModel {
     private boolean isLoadingMore = false;
 
     @Inject
-    public SearchViewModel(NetworkWallhavenRepository repository) {
+    public SearchResultsViewModel(NetworkWallhavenRepository repository) {
         this.repository = repository;
     }
     

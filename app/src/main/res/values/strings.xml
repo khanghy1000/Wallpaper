@@ -45,6 +45,7 @@
     <string name="filter">Filter</string>
     <string name="search_results">Search Results</string>
     <string name="filters">Filters</string>
+    <string name="try_different_search_terms">Try different search terms or adjust your filters</string>
 
     <!-- Wallpaper viewer strings -->
     <string name="back">Back</string>
