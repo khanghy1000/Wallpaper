@@ -75,6 +75,7 @@ public class SearchFragment extends Fragment {
         setupRecyclerView();
         setupClickListeners();
         setupKeyboardHandling();
+        setupBackButtonHandling();
         observeViewModel();
         handleIntentData();
     }
@@ -340,6 +341,22 @@ public class SearchFragment extends Fragment {
             adjustFABMargin(keyboardHeight);
 
             return insets;
+        });
+    }
+
+    private void setupBackButtonHandling() {
+        // Handle system back button to match toolbar back button behavior
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
+                    // If showing results, go back to search form
+                    viewModel.hideResults();
+                } else {
+                    // If showing search form, close activity
+                    requireActivity().finish();
+                }
+            }
         });
     }
 
