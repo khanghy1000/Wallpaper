@@ -317,15 +317,13 @@ public class SearchFragment extends Fragment {
 
         // Setup toolbar navigation
         binding.toolbar.setNavigationOnClickListener(v -> {
-//            if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
-//                // If showing results, go back to search form
-//                viewModel.hideResults();
-//            } else {
-//                // If showing search form, close activity
-//                requireActivity().finish();
-//            }
-
-            requireActivity().finish();
+            if (Boolean.TRUE.equals(viewModel.showResults.getValue())) {
+                // If showing results, go back to search form
+                viewModel.hideResults();
+            } else {
+                // If showing search form, close activity
+                requireActivity().finish();
+            }
         });
     }
 
@@ -564,15 +562,15 @@ public class SearchFragment extends Fragment {
                 boolean isLoadingState = loading && !isSwipeRefreshing && viewModel.wallpapers.getValue() == null;
                 if (isLoadingState) {
                     binding.progressIndicator.setIndeterminate(true);
-                    binding.progressIndicator.setVisibility(View.VISIBLE);
+                    showProgressIndicatorAnimated();
                 } else {
-                    binding.progressIndicator.setVisibility(View.GONE);
+                    hideProgressIndicatorAnimated();
                 }
                 // Handle swipe refresh loading
                 binding.swipeRefresh.setRefreshing(loading && isSwipeRefreshing);
             } else {
                 // Hide center loading when not showing results (in filter UI)
-                binding.progressIndicator.setVisibility(View.GONE);
+                hideProgressIndicatorAnimated();
                 binding.swipeRefresh.setRefreshing(false);
             }
             
@@ -595,54 +593,11 @@ public class SearchFragment extends Fragment {
 
         viewModel.showResults.observe(getViewLifecycleOwner(), showResults -> {
             if (showResults) {
-                // Show results container, hide search form
-                binding.searchForm.setVisibility(View.GONE);
-                binding.resultsContainer.setVisibility(View.VISIBLE);
-
-                // Update toolbar for results view
-                binding.toolbar.setTitle(R.string.search_results);
-
-                // Show filter button, hide apply/clear buttons
-                binding.btnFilter.setVisibility(View.VISIBLE);
-                binding.btnSearch.setVisibility(View.GONE);
-                binding.btnClearFilters.setVisibility(View.GONE);
-                
-                // Scroll to top when showing results
-                binding.recyclerView.scrollToPosition(0);
-                
-                // Update UI state for results view
-                List<NetworkWallhavenWallpaper> wallpapers = viewModel.wallpapers.getValue();
-                if (wallpapers != null) {
-                    updateUIState(wallpapers.isEmpty());
-                } else {
-                    updateUIState(false); // Loading state
-                    // Explicitly show center loading when transitioning to results with null wallpapers
-                    if (Boolean.TRUE.equals(viewModel.loading.getValue()) && !isSwipeRefreshing) {
-                        binding.progressIndicator.setVisibility(View.VISIBLE);
-                    }
-                }
+                // Animate from search form to results container
+                animateToResults();
             } else {
-                // Show search form, hide results container
-                binding.searchForm.setVisibility(View.VISIBLE);
-                binding.resultsContainer.setVisibility(View.GONE);
-
-                // Update toolbar for search form
-                binding.toolbar.setTitle(R.string.search_wallpapers);
-
-                // Show apply/clear buttons, hide filter button
-                binding.btnFilter.setVisibility(View.GONE);
-                binding.btnSearch.setVisibility(View.VISIBLE);
-                binding.btnClearFilters.setVisibility(View.VISIBLE);
-                
-                // Hide progress indicator when going back to filter UI
-                binding.progressIndicator.setVisibility(View.GONE);
-                
-                // Reset swipe refresh state
-                isSwipeRefreshing = false;
-                binding.swipeRefresh.setRefreshing(false);
-                
-                // Update UI state for filter view (this will hide empty state and RecyclerView)
-                updateUIState(false);
+                // Animate from results container to search form
+                animateToSearchForm();
             }
         });
     }
@@ -690,6 +645,250 @@ public class SearchFragment extends Fragment {
             // When not showing results (in filter UI), hide both empty state and RecyclerView
             binding.emptyState.setVisibility(View.GONE);
             binding.swipeRefresh.setVisibility(View.GONE);
+        }
+    }
+    
+    private void animateToResults() {
+        // Duration for animations
+        int animDuration = 300;
+        
+        // First, set up the results container for the animation
+        binding.resultsContainer.setVisibility(View.VISIBLE);
+        binding.resultsContainer.setAlpha(0f);
+        binding.resultsContainer.setTranslationX(binding.getRoot().getWidth());
+        
+        // Animate search form out (slide left and fade out)
+        binding.searchForm.animate()
+                .alpha(0f)
+                .translationX(-binding.getRoot().getWidth())
+                .setDuration(animDuration)
+                .withEndAction(() -> {
+                    binding.searchForm.setVisibility(View.GONE);
+                    // Reset translation for next time
+                    binding.searchForm.setTranslationX(0);
+                    binding.searchForm.setAlpha(1f);
+                })
+                .start();
+        
+        // Animate results container in (slide from right and fade in)
+        binding.resultsContainer.animate()
+                .alpha(1f)
+                .translationX(0)
+                .setDuration(animDuration)
+                .withStartAction(() -> {
+                    // Update UI elements at the start of animation
+                    updateToolbarForResults();
+                    updateFABsForResults();
+                })
+                .withEndAction(() -> {
+                    // Finalize results view setup
+                    finalizeResultsView();
+                })
+                .start();
+    }
+    
+    private void animateToSearchForm() {
+        // Duration for animations
+        int animDuration = 300;
+        
+        // First, set up the search form for the animation
+        binding.searchForm.setVisibility(View.VISIBLE);
+        binding.searchForm.setAlpha(0f);
+        binding.searchForm.setTranslationX(-binding.getRoot().getWidth());
+        
+        // Animate results container out (slide right and fade out)
+        binding.resultsContainer.animate()
+                .alpha(0f)
+                .translationX(binding.getRoot().getWidth())
+                .setDuration(animDuration)
+                .withEndAction(() -> {
+                    binding.resultsContainer.setVisibility(View.GONE);
+                    // Reset translation for next time
+                    binding.resultsContainer.setTranslationX(0);
+                    binding.resultsContainer.setAlpha(1f);
+                })
+                .start();
+        
+        // Animate search form in (slide from left and fade in)
+        binding.searchForm.animate()
+                .alpha(1f)
+                .translationX(0)
+                .setDuration(animDuration)
+                .withStartAction(() -> {
+                    // Update UI elements at the start of animation
+                    updateToolbarForSearchForm();
+                    updateFABsForSearchForm();
+                })
+                .withEndAction(() -> {
+                    // Finalize search form view setup
+                    finalizeSearchFormView();
+                })
+                .start();
+    }
+    
+    private void updateToolbarForResults() {
+        // Animate toolbar title change
+        binding.toolbar.animate()
+                .alpha(0.5f)
+                .setDuration(150)
+                .withEndAction(() -> {
+                    binding.toolbar.setTitle(R.string.search_results);
+                    binding.toolbar.animate()
+                            .alpha(1f)
+                            .setDuration(150)
+                            .start();
+                })
+                .start();
+    }
+    
+    private void updateToolbarForSearchForm() {
+        // Animate toolbar title change
+        binding.toolbar.animate()
+                .alpha(0.5f)
+                .setDuration(150)
+                .withEndAction(() -> {
+                    binding.toolbar.setTitle(R.string.search_wallpapers);
+                    binding.toolbar.animate()
+                            .alpha(1f)
+                            .setDuration(150)
+                            .start();
+                })
+                .start();
+    }
+    
+    private void updateFABsForResults() {
+        // Animate FABs with slight delay for better visual effect
+        binding.btnSearch.animate()
+                .alpha(0f)
+                .scaleX(0.8f)
+                .scaleY(0.8f)
+                .setDuration(150)
+                .withEndAction(() -> {
+                    binding.btnSearch.setVisibility(View.GONE);
+                    binding.btnSearch.setAlpha(1f);
+                    binding.btnSearch.setScaleX(1f);
+                    binding.btnSearch.setScaleY(1f);
+                })
+                .start();
+                
+        binding.btnClearFilters.animate()
+                .alpha(0f)
+                .setDuration(150)
+                .withEndAction(() -> {
+                    binding.btnClearFilters.setVisibility(View.GONE);
+                    binding.btnClearFilters.setAlpha(1f);
+                })
+                .start();
+        
+        // Show filter button with animation
+        binding.btnFilter.setVisibility(View.VISIBLE);
+        binding.btnFilter.setAlpha(0f);
+        binding.btnFilter.setScaleX(0.8f);
+        binding.btnFilter.setScaleY(0.8f);
+        binding.btnFilter.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(200)
+                .setStartDelay(100)
+                .start();
+    }
+    
+    private void updateFABsForSearchForm() {
+        // Animate filter FAB out
+        binding.btnFilter.animate()
+                .alpha(0f)
+                .scaleX(0.8f)
+                .scaleY(0.8f)
+                .setDuration(150)
+                .withEndAction(() -> {
+                    binding.btnFilter.setVisibility(View.GONE);
+                    binding.btnFilter.setAlpha(1f);
+                    binding.btnFilter.setScaleX(1f);
+                    binding.btnFilter.setScaleY(1f);
+                })
+                .start();
+        
+        // Show search and clear buttons with animation
+        binding.btnSearch.setVisibility(View.VISIBLE);
+        binding.btnSearch.setAlpha(0f);
+        binding.btnSearch.setScaleX(0.8f);
+        binding.btnSearch.setScaleY(0.8f);
+        binding.btnSearch.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(200)
+                .setStartDelay(100)
+                .start();
+                
+        binding.btnClearFilters.setVisibility(View.VISIBLE);
+        binding.btnClearFilters.setAlpha(0f);
+        binding.btnClearFilters.animate()
+                .alpha(1f)
+                .setDuration(200)
+                .setStartDelay(100)
+                .start();
+    }
+    
+    private void finalizeResultsView() {
+        // Scroll to top when showing results
+        binding.recyclerView.scrollToPosition(0);
+        
+        // Update UI state for results view
+        List<NetworkWallhavenWallpaper> wallpapers = viewModel.wallpapers.getValue();
+        if (wallpapers != null) {
+            updateUIState(wallpapers.isEmpty());
+        } else {
+            updateUIState(false); // Loading state
+            // Explicitly show center loading when transitioning to results with null wallpapers
+            if (Boolean.TRUE.equals(viewModel.loading.getValue()) && !isSwipeRefreshing) {
+                showProgressIndicatorAnimated();
+            }
+        }
+    }
+    
+    private void finalizeSearchFormView() {
+        // Hide progress indicator when going back to filter UI
+        hideProgressIndicatorAnimated();
+        
+        // Reset swipe refresh state
+        isSwipeRefreshing = false;
+        binding.swipeRefresh.setRefreshing(false);
+        
+        // Update UI state for filter view (this will hide empty state and RecyclerView)
+        updateUIState(false);
+    }
+    
+    private void showProgressIndicatorAnimated() {
+        if (binding.progressIndicator.getVisibility() != View.VISIBLE) {
+            binding.progressIndicator.setVisibility(View.VISIBLE);
+            binding.progressIndicator.setAlpha(0f);
+            binding.progressIndicator.setScaleX(0.8f);
+            binding.progressIndicator.setScaleY(0.8f);
+            binding.progressIndicator.animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(200)
+                    .start();
+        }
+    }
+    
+    private void hideProgressIndicatorAnimated() {
+        if (binding.progressIndicator.getVisibility() == View.VISIBLE) {
+            binding.progressIndicator.animate()
+                    .alpha(0f)
+                    .scaleX(0.8f)
+                    .scaleY(0.8f)
+                    .setDuration(200)
+                    .withEndAction(() -> {
+                        binding.progressIndicator.setVisibility(View.GONE);
+                        binding.progressIndicator.setAlpha(1f);
+                        binding.progressIndicator.setScaleX(1f);
+                        binding.progressIndicator.setScaleY(1f);
+                    })
+                    .start();
         }
     }
 
