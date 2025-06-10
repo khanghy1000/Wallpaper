@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
@@ -79,6 +80,31 @@ public class HomeFragment extends Fragment {
                 WallpaperViewerActivity.start(requireContext(), wallpaper.getPath(), wallpaper.getId());
             }
         });
+        
+        // Add infinite scrolling
+        binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                
+                if (dy > 0) { // Only check when scrolling down
+                    StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) recyclerView.getLayoutManager();
+                    if (layoutManager != null) {
+                        // Get the last visible item positions for both spans
+                        int[] lastVisibleItemPositions = layoutManager.findLastVisibleItemPositions(null);
+                        int lastVisibleItem = Math.max(lastVisibleItemPositions[0], lastVisibleItemPositions[1]);
+                        int totalItemCount = layoutManager.getItemCount();
+                        
+                        // Load more when we're near the end (5 items before the end)
+                        if (lastVisibleItem >= totalItemCount - 5 && 
+                            !Boolean.TRUE.equals(viewModel.loading.getValue()) &&
+                            !Boolean.TRUE.equals(viewModel.loadingMore.getValue())) {
+                            viewModel.loadMoreWallpapers();
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void setupSwipeRefresh() {
@@ -96,11 +122,22 @@ public class HomeFragment extends Fragment {
 
     private void observeViewModel() {
         viewModel.wallpapers.observe(getViewLifecycleOwner(), wallpapers -> {
-            adapter.setWallpapers(wallpapers);
+            if (adapter.getItemCount() == 0) {
+                // First load or refresh - set all wallpapers
+                adapter.setWallpapers(wallpapers);
+            } else {
+                // This is for pagination - the ViewModel already handles adding to the list
+                adapter.setWallpapers(wallpapers);
+            }
         });
 
         viewModel.loading.observe(getViewLifecycleOwner(), loading -> {
             binding.swipeRefresh.setRefreshing(loading);
+        });
+
+        viewModel.loadingMore.observe(getViewLifecycleOwner(), loadingMore -> {
+            // You can add a loading indicator at the bottom if needed
+            // For now, we just observe it to prevent multiple simultaneous requests
         });
 
         viewModel.error.observe(getViewLifecycleOwner(), error -> {

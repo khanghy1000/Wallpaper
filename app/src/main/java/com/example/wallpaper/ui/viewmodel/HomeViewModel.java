@@ -30,8 +30,15 @@ public class HomeViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _loading = new MutableLiveData<>(false);
     public final LiveData<Boolean> loading = _loading;
     
+    private final MutableLiveData<Boolean> _loadingMore = new MutableLiveData<>(false);
+    public final LiveData<Boolean> loadingMore = _loadingMore;
+    
     private final MutableLiveData<String> _error = new MutableLiveData<>();
     public final LiveData<String> error = _error;
+    
+    private int currentPage = 1;
+    private boolean hasMorePages = true;
+    private boolean isLoadingMore = false;
     
     @Inject
     public HomeViewModel(NetworkWallhavenRepository repository) {
@@ -40,7 +47,52 @@ public class HomeViewModel extends ViewModel {
     }
     
     public void loadWallpapers() {
+        if (isLoadingMore) return;
+        
         _loading.setValue(true);
+        _error.setValue(null);
+        
+        // Reset pagination for fresh load
+        currentPage = 1;
+        hasMorePages = true;
+        
+        // Create WallhavenSearch with default parameters and random sorting
+        WallhavenFilters filters = new WallhavenFilters();
+        filters.setSorting(WallhavenSorting.DATE_ADDED);
+        filters.setOrder(Order.DESC);
+        
+        WallhavenSearch search = new WallhavenSearch("", filters, null);
+        
+        repository.searchWallpapers(
+                search,
+                currentPage,
+                new NetworkWallhavenRepository.WallpapersCallback() {
+                    @Override
+                    public void onSuccess(NetworkWallhavenWallpapersResponse response) {
+                        _loading.setValue(false);
+                        if (response.getData() != null) {
+                            _wallpapers.setValue(response.getData());
+                            // Check if there are more pages
+                            if (response.getMeta() != null) {
+                                hasMorePages = response.getMeta().getCurrentPage() < response.getMeta().getLastPage();
+                            }
+                        }
+                    }
+                    
+                    @Override
+                    public void onError(String error) {
+                        _loading.setValue(false);
+                        _error.setValue(error);
+                    }
+                }
+        );
+    }
+    
+    public void loadMoreWallpapers() {
+        if (isLoadingMore || !hasMorePages) return;
+        
+        isLoadingMore = true;
+        _loadingMore.setValue(true);
         _error.setValue(null);
         
         // Create WallhavenSearch with default parameters and random sorting
@@ -52,19 +104,35 @@ public class HomeViewModel extends ViewModel {
         
         repository.searchWallpapers(
                 search,
-                1, // page
+                currentPage + 1,
                 new NetworkWallhavenRepository.WallpapersCallback() {
                     @Override
                     public void onSuccess(NetworkWallhavenWallpapersResponse response) {
-                        _loading.setValue(false);
-                        if (response.getData() != null) {
-                            _wallpapers.setValue(response.getData());
+                        isLoadingMore = false;
+                        _loadingMore.setValue(false);
+                        if (response.getData() != null && !response.getData().isEmpty()) {
+                            currentPage++;
+                            List<NetworkWallhavenWallpaper> currentWallpapers = _wallpapers.getValue();
+                            if (currentWallpapers == null) {
+                                currentWallpapers = new ArrayList<>();
+                            }
+                            List<NetworkWallhavenWallpaper> updatedList = new ArrayList<>(currentWallpapers);
+                            updatedList.addAll(response.getData());
+                            _wallpapers.setValue(updatedList);
+                            
+                            // Check if there are more pages
+                            if (response.getMeta() != null) {
+                                hasMorePages = response.getMeta().getCurrentPage() < response.getMeta().getLastPage();
+                            }
+                        } else {
+                            hasMorePages = false;
                         }
                     }
                     
                     @Override
                     public void onError(String error) {
-                        _loading.setValue(false);
+                        isLoadingMore = false;
+                        _loadingMore.setValue(false);
                         _error.setValue(error);
                     }
                 }

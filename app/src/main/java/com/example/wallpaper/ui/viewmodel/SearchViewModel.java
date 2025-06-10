@@ -36,6 +36,9 @@ public class SearchViewModel extends ViewModel {
 
     private final MutableLiveData<Boolean> _loading = new MutableLiveData<>(false);
     public final LiveData<Boolean> loading = _loading;
+    
+    private final MutableLiveData<Boolean> _loadingMore = new MutableLiveData<>(false);
+    public final LiveData<Boolean> loadingMore = _loadingMore;
 
     private final MutableLiveData<String> _error = new MutableLiveData<>();
     public final LiveData<String> error = _error;
@@ -44,6 +47,9 @@ public class SearchViewModel extends ViewModel {
     public final LiveData<Boolean> showResults = _showResults;
 
     private WallhavenSearch currentSearch = createDefaultSearch();
+    private int currentPage = 1;
+    private boolean hasMorePages = true;
+    private boolean isLoadingMore = false;
 
     @Inject
     public SearchViewModel(NetworkWallhavenRepository repository) {
@@ -138,23 +144,36 @@ public class SearchViewModel extends ViewModel {
         
         currentSearch = search;
         
+        // Reset pagination for new search
+        currentPage = 1;
+        hasMorePages = true;
+        isLoadingMore = false;
+        
         performSearch();
     }
 
     private void performSearch() {
+        if (isLoadingMore) return;
+        
         _loading.setValue(true);
         _error.setValue(null);
         
-        repository.searchWallpapers(currentSearch, 1, new NetworkWallhavenRepository.WallpapersCallback() {
+        repository.searchWallpapers(currentSearch, currentPage, new NetworkWallhavenRepository.WallpapersCallback() {
             @Override
             public void onSuccess(NetworkWallhavenWallpapersResponse response) {
                 _loading.setValue(false);
                 if (response != null && response.getData() != null) {
                     _wallpapers.setValue(response.getData());
                     _showResults.setValue(true);
+                    
+                    // Check if there are more pages
+                    if (response.getMeta() != null) {
+                        hasMorePages = response.getMeta().getCurrentPage() < response.getMeta().getLastPage();
+                    }
                 } else {
                     _wallpapers.setValue(new ArrayList<>());
                     _showResults.setValue(true);
+                    hasMorePages = false;
                 }
             }
 
@@ -164,18 +183,66 @@ public class SearchViewModel extends ViewModel {
                 _error.setValue("Failed to search wallpapers: " + error);
                 _wallpapers.setValue(new ArrayList<>());
                 _showResults.setValue(true);
+                hasMorePages = false;
+            }
+        });
+    }
+    
+    public void loadMoreWallpapers() {
+        if (isLoadingMore || !hasMorePages || currentSearch == null) return;
+        
+        isLoadingMore = true;
+        _loadingMore.setValue(true);
+        _error.setValue(null);
+        
+        repository.searchWallpapers(currentSearch, currentPage + 1, new NetworkWallhavenRepository.WallpapersCallback() {
+            @Override
+            public void onSuccess(NetworkWallhavenWallpapersResponse response) {
+                isLoadingMore = false;
+                _loadingMore.setValue(false);
+                if (response != null && response.getData() != null && !response.getData().isEmpty()) {
+                    currentPage++;
+                    List<NetworkWallhavenWallpaper> currentWallpapers = _wallpapers.getValue();
+                    if (currentWallpapers == null) {
+                        currentWallpapers = new ArrayList<>();
+                    }
+                    List<NetworkWallhavenWallpaper> updatedList = new ArrayList<>(currentWallpapers);
+                    updatedList.addAll(response.getData());
+                    _wallpapers.setValue(updatedList);
+                    
+                    // Check if there are more pages
+                    if (response.getMeta() != null) {
+                        hasMorePages = response.getMeta().getCurrentPage() < response.getMeta().getLastPage();
+                    }
+                } else {
+                    hasMorePages = false;
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoadingMore = false;
+                _loadingMore.setValue(false);
+                _error.setValue("Failed to load more wallpapers: " + error);
             }
         });
     }
 
     public void refreshSearch() {
         if (currentSearch != null) {
+            // Reset pagination for refresh
+            currentPage = 1;
+            hasMorePages = true;
+            isLoadingMore = false;
             performSearch();
         }
     }
 
     public void clearFilters() {
         currentSearch = createDefaultSearch();
+        currentPage = 1;
+        hasMorePages = true;
+        isLoadingMore = false;
         _wallpapers.setValue(new ArrayList<>());
         _showResults.setValue(false);
         _error.setValue(null);

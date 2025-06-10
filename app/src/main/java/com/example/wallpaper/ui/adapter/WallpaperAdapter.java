@@ -40,6 +40,19 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Wall
         }
     }
     
+    public void addWallpapers(List<NetworkWallhavenWallpaper> newWallpapers) {
+        if (newWallpapers != null && !newWallpapers.isEmpty()) {
+            int oldSize = this.wallpapers.size();
+            this.wallpapers.addAll(newWallpapers);
+            notifyItemRangeInserted(oldSize, newWallpapers.size());
+        }
+    }
+    
+    public void clearWallpapers() {
+        this.wallpapers.clear();
+        notifyDataSetChanged();
+    }
+    
     private int getItemWidth(View view) {
         if (itemWidth == -1) {
             int screenWidth = view.getResources().getDisplayMetrics().widthPixels;

@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.wallpaper.R;
@@ -263,6 +264,31 @@ public class SearchFragment extends Fragment {
                 WallpaperViewerActivity.start(requireContext(), wallpaper.getPath(), wallpaper.getId());
             }
         });
+        
+        // Add infinite scrolling for search results
+        binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                
+                if (dy > 0 && Boolean.TRUE.equals(viewModel.showResults.getValue())) { // Only check when scrolling down and showing results
+                    StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) recyclerView.getLayoutManager();
+                    if (layoutManager != null) {
+                        // Get the last visible item positions for both spans
+                        int[] lastVisibleItemPositions = layoutManager.findLastVisibleItemPositions(null);
+                        int lastVisibleItem = Math.max(lastVisibleItemPositions[0], lastVisibleItemPositions[1]);
+                        int totalItemCount = layoutManager.getItemCount();
+                        
+                        // Load more when we're near the end (5 items before the end)
+                        if (lastVisibleItem >= totalItemCount - 5 && 
+                            !Boolean.TRUE.equals(viewModel.loading.getValue()) &&
+                            !Boolean.TRUE.equals(viewModel.loadingMore.getValue())) {
+                            viewModel.loadMoreWallpapers();
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void setupClickListeners() {
@@ -502,6 +528,11 @@ public class SearchFragment extends Fragment {
         viewModel.loading.observe(getViewLifecycleOwner(), loading -> {
             binding.swipeRefresh.setRefreshing(loading);
             binding.progressIndicator.setVisibility(loading ? View.VISIBLE : View.GONE);
+        });
+
+        viewModel.loadingMore.observe(getViewLifecycleOwner(), loadingMore -> {
+            // You can add a loading indicator at the bottom if needed
+            // For now, we just observe it to prevent multiple simultaneous requests
         });
 
         viewModel.error.observe(getViewLifecycleOwner(), error -> {
