@@ -42,7 +42,7 @@
         app:cardCornerRadius="28dp"
         app:cardElevation="8dp"
         app:strokeWidth="0dp"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -126,5 +126,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:indeterminateTint="@android:color/white" />
+
+    <!-- Bottom Sheet -->
+    <include layout="@layout/bottom_sheet_wallpaper_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -75,7 +75,11 @@ public class NetworkWallhavenWallpaper implements FavoriteWallpaper {
     
     @Json(name = "tags")
     private List<NetworkWallhavenTag> tags;
-    
+
+    public String getSourceUrl() {
+        return source;
+    }
+
     // FavoriteWallpaper interface implementation
     @Override
     public String getSourceId() {

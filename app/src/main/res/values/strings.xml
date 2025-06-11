@@ -60,6 +60,15 @@
     <string name="add_to_favorites">Add to favorites</string>
     <string name="remove_from_favorites">Remove from favorites</string>
     <string name="wallpaper_info">Wallpaper info</string>
+    <string name="location">Location</string>
+    <string name="resolution">Resolution</string>
+    <string name="size">Size</string>
+    <string name="source">Source</string>
+    <string name="image_url">Image URL</string>
+    <string name="uploader">Uploader</string>
+    <string name="category">Category</string>
+    <string name="views">Views</string>
+    <string name="favorites">Favorites</string>
 
     <!-- Local Fragment strings -->
     <string name="no_local_wallpapers_found">No local wallpapers found</string>

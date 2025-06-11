@@ -11,6 +11,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.wallpaper.data.repository.FavoritesRepository;
+import com.example.wallpaper.data.repository.LocalWallpaperRepository;
 import com.example.wallpaper.data.repository.NetworkWallhavenRepository;
 import com.example.wallpaper.model.FavoriteWallpaper;
 import com.example.wallpaper.model.LocalWallpaper;
@@ -32,6 +33,7 @@ public class WallpaperViewerViewModel extends AndroidViewModel {
     
     private final FavoritesRepository favoritesRepository;
     private final NetworkWallhavenRepository networkRepository;
+    private final LocalWallpaperRepository localRepository;
     private final CompositeDisposable disposables = new CompositeDisposable();
     
     private final MutableLiveData<Boolean> _isFavorite = new MutableLiveData<>(false);
@@ -40,20 +42,67 @@ public class WallpaperViewerViewModel extends AndroidViewModel {
     private final MutableLiveData<String> _error = new MutableLiveData<>();
     public final LiveData<String> error = _error;
     
+    private final MutableLiveData<NetworkWallhavenWallpaper> _networkWallpaperInfo = new MutableLiveData<>();
+    public final LiveData<NetworkWallhavenWallpaper> networkWallpaperInfo = _networkWallpaperInfo;
+    
+    private final MutableLiveData<LocalWallpaper> _localWallpaperInfo = new MutableLiveData<>();
+    public final LiveData<LocalWallpaper> localWallpaperInfo = _localWallpaperInfo;
+    
     private String wallpaperId;
     private String wallpaperPath;
     
     @Inject
-    public WallpaperViewerViewModel(Application application, FavoritesRepository favoritesRepository, NetworkWallhavenRepository networkRepository) {
+    public WallpaperViewerViewModel(Application application, FavoritesRepository favoritesRepository, 
+                                  NetworkWallhavenRepository networkRepository, LocalWallpaperRepository localRepository) {
         super(application);
         this.favoritesRepository = favoritesRepository;
         this.networkRepository = networkRepository;
+        this.localRepository = localRepository;
     }
     
     public void setWallpaperInfo(String wallpaperId, String wallpaperPath) {
         this.wallpaperId = wallpaperId;
         this.wallpaperPath = wallpaperPath;
         checkIfFavorite();
+        loadWallpaperDetails();
+    }
+    
+    private void loadWallpaperDetails() {
+        if (wallpaperId == null) return;
+        
+        if (isRemoteWallpaper()) {
+            // For network wallpapers, fetch from API
+            networkRepository.getWallpaper(wallpaperId, new NetworkWallhavenRepository.WallpaperCallback() {
+                @Override
+                public void onSuccess(NetworkWallhavenWallpaperResponse response) {
+                    if (response.getData() != null) {
+                        _networkWallpaperInfo.setValue(response.getData());
+                    }
+                }
+                
+                @Override
+                public void onError(String error) {
+                    _error.setValue("Failed to load wallpaper details: " + error);
+                }
+            });
+        } else {
+            // For local wallpapers, get from local repository
+            disposables.add(
+                localRepository.getLocalWallpaperById(getApplication(), wallpaperId)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        wallpaper -> {
+                            if (wallpaper != null) {
+                                _localWallpaperInfo.setValue(wallpaper);
+                            }
+                        },
+                        throwable -> {
+                            _error.setValue("Failed to load local wallpaper details: " + throwable.getMessage());
+                        }
+                    )
+            );
+        }
     }
     
     private void checkIfFavorite() {

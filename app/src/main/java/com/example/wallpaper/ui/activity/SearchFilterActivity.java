@@ -46,6 +46,19 @@ public class SearchFilterActivity extends AppCompatActivity {
         return intent;
     }
 
+    public static Intent newIntentWithSearchQuery(Context context, String query) {
+        Intent intent = new Intent(context, SearchFilterActivity.class);
+        intent.putExtra("search_query", query);
+        return intent;
+    }
+
+    public static Intent newIntentWithTagAndQuery(Context context, String tag, String query) {
+        Intent intent = new Intent(context, SearchFilterActivity.class);
+        intent.putExtra("search_tag", tag);
+        intent.putExtra("search_query", query);
+        return intent;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,11 +84,21 @@ public class SearchFilterActivity extends AppCompatActivity {
 
     private void handleIntentData() {
         String searchTag = getIntent().getStringExtra("search_tag");
+        String searchQuery = getIntent().getStringExtra("search_query");
+
+        if ((searchTag == null || searchTag.isEmpty()) && (searchQuery == null || searchQuery.isEmpty())) {
+            return;
+        }
+
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            binding.etKeyword.setText(searchQuery);
+        }
+
         if (searchTag != null && !searchTag.isEmpty()) {
             binding.etTags.setText(searchTag);
-            // Auto-perform search
-            performSearch();
         }
+
+        performSearch();
     }
 
     private void setupCategoryChips() {
