@@ -103,6 +103,16 @@ public class SearchResultsActivity extends AppCompatActivity {
         adapter.setOnWallpaperClickListener(wallpaper -> 
             WallpaperViewerActivity.start(this, wallpaper.getPath(), wallpaper.getId())
         );
+        
+        // Set favorite click listener
+        adapter.setOnFavoriteClickListener(wallpaper -> {
+            viewModel.toggleFavorite(wallpaper);
+        });
+        
+        // Set favorite checker
+        adapter.setFavoriteChecker(wallpaper -> {
+            return viewModel.isFavorite(wallpaper);
+        });
 
         // Add infinite scrolling
         binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -183,6 +193,11 @@ public class SearchResultsActivity extends AppCompatActivity {
             if (error != null) {
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show();
             }
+        });
+
+        viewModel.favoriteIds.observe(this, favoriteIds -> {
+            // Notify adapter that favorite states might have changed
+            adapter.notifyDataSetChanged();
         });
     }
 

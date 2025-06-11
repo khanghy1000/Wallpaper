@@ -20,14 +20,32 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Wall
     
     private List<NetworkWallhavenWallpaper> wallpapers = new ArrayList<>();
     private OnWallpaperClickListener listener;
+    private OnFavoriteClickListener favoriteClickListener;
+    private FavoriteChecker favoriteChecker;
     private int itemWidth = -1; // Cache the calculated item width
-    
+
     public interface OnWallpaperClickListener {
         void onWallpaperClick(NetworkWallhavenWallpaper wallpaper);
     }
     
+    public interface OnFavoriteClickListener {
+        void onFavoriteClick(NetworkWallhavenWallpaper wallpaper);
+    }
+    
+    public interface FavoriteChecker {
+        boolean isFavorite(NetworkWallhavenWallpaper wallpaper);
+    }
+
     public void setOnWallpaperClickListener(OnWallpaperClickListener listener) {
         this.listener = listener;
+    }
+    
+    public void setOnFavoriteClickListener(OnFavoriteClickListener listener) {
+        this.favoriteClickListener = listener;
+    }
+    
+    public void setFavoriteChecker(FavoriteChecker checker) {
+        this.favoriteChecker = checker;
     }
     
     public void setWallpapers(List<NetworkWallhavenWallpaper> wallpapers) {
@@ -108,10 +126,26 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Wall
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(binding.wallpaperImage);
             
-            // Set click listener
+            // Setup favorite button
+            boolean isFavorite = favoriteChecker != null && favoriteChecker.isFavorite(wallpaper);
+            if (isFavorite) {
+                binding.favoriteButton.setImageResource(com.example.wallpaper.R.drawable.ic_favorite_filled_red);
+                binding.favoriteButton.setContentDescription("Remove from favorites");
+            } else {
+                binding.favoriteButton.setImageResource(com.example.wallpaper.R.drawable.ic_favorite_border);
+                binding.favoriteButton.setContentDescription("Add to favorites");
+            }
+            
+            // Set click listeners
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onWallpaperClick(wallpaper);
+                }
+            });
+            
+            binding.favoriteButton.setOnClickListener(v -> {
+                if (favoriteClickListener != null) {
+                    favoriteClickListener.onFavoriteClick(wallpaper);
                 }
             });
         }

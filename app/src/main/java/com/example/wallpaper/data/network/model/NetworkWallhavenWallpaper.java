@@ -1,5 +1,6 @@
 package com.example.wallpaper.data.network.model;
 
+import com.example.wallpaper.model.FavoriteWallpaper;
 import com.squareup.moshi.Json;
 
 import java.time.Instant;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NetworkWallhavenWallpaper {
+public class NetworkWallhavenWallpaper implements FavoriteWallpaper {
     @Json(name = "id")
     private String id;
     
@@ -74,4 +75,20 @@ public class NetworkWallhavenWallpaper {
     
     @Json(name = "tags")
     private List<NetworkWallhavenTag> tags;
+    
+    // FavoriteWallpaper interface implementation
+    @Override
+    public String getSourceId() {
+        return id;
+    }
+    
+    @Override
+    public String getSource() {
+        return "WALLHAVEN";
+    }
+    
+    @Override
+    public String getThumbUrl() {
+        return thumbs != null ? thumbs.getOriginal() : null;
+    }
 }

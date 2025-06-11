@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LocalWallpaper {
+public class LocalWallpaper implements FavoriteWallpaper {
     private String id;
     private String name;
     private Uri uri;
@@ -29,5 +29,21 @@ public class LocalWallpaper {
     
     public String getResolution() {
         return width + "x" + height;
+    }
+    
+    // FavoriteWallpaper interface implementation
+    @Override
+    public String getSourceId() {
+        return id;
+    }
+    
+    @Override
+    public String getSource() {
+        return "LOCAL";
+    }
+    
+    @Override
+    public String getThumbUrl() {
+        return uri != null ? uri.toString() : null;
     }
 }

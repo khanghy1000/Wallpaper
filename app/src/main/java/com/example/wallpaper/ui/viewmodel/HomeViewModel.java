@@ -8,6 +8,8 @@ import com.example.wallpaper.data.network.model.NetworkWallhavenTag;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpaper;
 import com.example.wallpaper.data.network.model.NetworkWallhavenWallpapersResponse;
 import com.example.wallpaper.data.repository.NetworkWallhavenRepository;
+import com.example.wallpaper.data.repository.FavoritesRepository;
+import com.example.wallpaper.data.database.entity.FavoriteEntity;
 import com.example.wallpaper.model.Order;
 import com.example.wallpaper.model.search.WallhavenFilters;
 import com.example.wallpaper.model.search.WallhavenSearch;
@@ -19,11 +21,16 @@ import java.util.List;
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @HiltViewModel
 public class HomeViewModel extends ViewModel {
     
     private final NetworkWallhavenRepository repository;
+    private final FavoritesRepository favoritesRepository;
+    private final CompositeDisposable disposables = new CompositeDisposable();
     
     private final MutableLiveData<List<NetworkWallhavenWallpaper>> _wallpapers = new MutableLiveData<>(new ArrayList<>());
     public final LiveData<List<NetworkWallhavenWallpaper>> wallpapers = _wallpapers;
@@ -44,15 +51,21 @@ public class HomeViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _loadingTags = new MutableLiveData<>(false);
     public final LiveData<Boolean> loadingTags = _loadingTags;
     
+    // Track favorite wallpaper IDs for quick checking
+    private final MutableLiveData<List<String>> _favoriteIds = new MutableLiveData<>(new ArrayList<>());
+    public final LiveData<List<String>> favoriteIds = _favoriteIds;
+    
     private int currentPage = 1;
     private boolean hasMorePages = true;
     private boolean isLoadingMore = false;
     
     @Inject
-    public HomeViewModel(NetworkWallhavenRepository repository) {
+    public HomeViewModel(NetworkWallhavenRepository repository, FavoritesRepository favoritesRepository) {
         this.repository = repository;
+        this.favoritesRepository = favoritesRepository;
         loadWallpapers();
         loadPopularTags();
+        observeFavoriteIds();
     }
     
     public void loadWallpapers() {
@@ -174,5 +187,55 @@ public class HomeViewModel extends ViewModel {
     
     public void refreshPopularTags() {
         loadPopularTags();
+    }
+    
+    public void toggleFavorite(NetworkWallhavenWallpaper wallpaper) {
+        disposables.add(
+            favoritesRepository.toggleFavorite(wallpaper)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    () -> {
+                        // Success - favorite toggled
+                        // No need to reload favorite IDs manually since we're observing changes
+                    },
+                    throwable -> {
+                        _error.setValue("Failed to toggle favorite: " + throwable.getMessage());
+                    }
+                )
+        );
+    }
+    
+    public boolean isFavorite(NetworkWallhavenWallpaper wallpaper) {
+        List<String> currentFavorites = _favoriteIds.getValue();
+        return currentFavorites != null && currentFavorites.contains(wallpaper.getId());
+    }
+    
+    private void observeFavoriteIds() {
+        disposables.add(
+            favoritesRepository.observeAllFavorites()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    favorites -> {
+                        List<String> favoriteIds = new ArrayList<>();
+                        for (FavoriteEntity favorite : favorites) {
+                            if ("WALLHAVEN".equals(favorite.getSource())) {
+                                favoriteIds.add(favorite.getSourceId());
+                            }
+                        }
+                        _favoriteIds.setValue(favoriteIds);
+                    },
+                    throwable -> {
+                        // Handle error silently for favorite loading
+                    }
+                )
+        );
+    }
+    
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        disposables.clear();
     }
 }

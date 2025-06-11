@@ -32,6 +32,7 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     
     private OnWallpaperClickListener wallpaperClickListener;
     private OnTagClickListener tagClickListener;
+    private OnFavoriteClickListener favoriteClickListener;
     private int itemWidth = -1; // Cache the calculated item width
     
     public interface OnWallpaperClickListener {
@@ -42,12 +43,30 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         void onTagClick(NetworkWallhavenTag tag);
     }
     
+    public interface OnFavoriteClickListener {
+        void onFavoriteClick(NetworkWallhavenWallpaper wallpaper);
+    }
+    
+    public interface FavoriteChecker {
+        boolean isFavorite(NetworkWallhavenWallpaper wallpaper);
+    }
+    
+    private FavoriteChecker favoriteChecker;
+    
     public void setOnWallpaperClickListener(OnWallpaperClickListener listener) {
         this.wallpaperClickListener = listener;
     }
     
     public void setOnTagClickListener(OnTagClickListener listener) {
         this.tagClickListener = listener;
+    }
+    
+    public void setOnFavoriteClickListener(OnFavoriteClickListener listener) {
+        this.favoriteClickListener = listener;
+    }
+    
+    public void setFavoriteChecker(FavoriteChecker checker) {
+        this.favoriteChecker = checker;
     }
     
     public boolean isShowingPopularTags() {
@@ -276,10 +295,26 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(binding.wallpaperImage);
             
-            // Set click listener
+            // Setup favorite button
+            boolean isFavorite = favoriteChecker != null && favoriteChecker.isFavorite(wallpaper);
+            if (isFavorite) {
+                binding.favoriteButton.setImageResource(com.example.wallpaper.R.drawable.ic_favorite_filled_red);
+                binding.favoriteButton.setContentDescription("Remove from favorites");
+            } else {
+                binding.favoriteButton.setImageResource(com.example.wallpaper.R.drawable.ic_favorite_border);
+                binding.favoriteButton.setContentDescription("Add to favorites");
+            }
+            
+            // Set click listeners
             binding.getRoot().setOnClickListener(v -> {
                 if (wallpaperClickListener != null) {
                     wallpaperClickListener.onWallpaperClick(wallpaper);
+                }
+            });
+            
+            binding.favoriteButton.setOnClickListener(v -> {
+                if (favoriteClickListener != null) {
+                    favoriteClickListener.onFavoriteClick(wallpaper);
                 }
             });
         }

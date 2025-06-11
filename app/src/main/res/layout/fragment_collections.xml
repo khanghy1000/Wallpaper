@@ -5,10 +5,30 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragment.CollectionsFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Collections" />
+        android:padding="4dp"
+        android:clipToPadding="false"
+        tools:listitem="@layout/item_wallpaper" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/empty_state_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="No favorite wallpapers yet.\nTap the heart icon on wallpapers to add them to your favorites."
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:visibility="gone" />
 
 </FrameLayout>

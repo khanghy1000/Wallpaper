@@ -96,6 +96,22 @@ public class HomeFragment extends Fragment {
             }
         });
         
+        // Set favorite click listener
+        adapter.setOnFavoriteClickListener(new HomeAdapter.OnFavoriteClickListener() {
+            @Override
+            public void onFavoriteClick(NetworkWallhavenWallpaper wallpaper) {
+                viewModel.toggleFavorite(wallpaper);
+            }
+        });
+        
+        // Set favorite checker
+        adapter.setFavoriteChecker(new HomeAdapter.FavoriteChecker() {
+            @Override
+            public boolean isFavorite(NetworkWallhavenWallpaper wallpaper) {
+                return viewModel.isFavorite(wallpaper);
+            }
+        });
+        
         // Add infinite scrolling
         binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -169,6 +185,11 @@ public class HomeFragment extends Fragment {
 
         viewModel.loadingTags.observe(getViewLifecycleOwner(), loadingTags -> {
             // You can add a loading indicator for tags if needed
+        });
+
+        viewModel.favoriteIds.observe(getViewLifecycleOwner(), favoriteIds -> {
+            // When favorite IDs change, notify the adapter to refresh favorite icons
+            adapter.notifyDataSetChanged();
         });
 
         viewModel.error.observe(getViewLifecycleOwner(), error -> {

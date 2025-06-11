@@ -89,6 +89,22 @@ public class LocalFragment extends Fragment {
                 WallpaperViewerActivity.start(requireContext(), wallpaper.getUri().toString(), wallpaper.getId());
             }
         });
+        
+        // Set favorite click listener
+        adapter.setOnFavoriteClickListener(new LocalWallpaperAdapter.OnFavoriteClickListener() {
+            @Override
+            public void onFavoriteClick(LocalWallpaper wallpaper) {
+                viewModel.toggleFavorite(wallpaper);
+            }
+        });
+        
+        // Set favorite checker
+        adapter.setFavoriteChecker(new LocalWallpaperAdapter.FavoriteChecker() {
+            @Override
+            public boolean isFavorite(LocalWallpaper wallpaper) {
+                return viewModel.isFavorite(wallpaper);
+            }
+        });
     }
 
     private void setupSwipeRefresh() {
@@ -119,6 +135,11 @@ public class LocalFragment extends Fragment {
                 Log.e(TAG, "Error loading wallpapers: " + error);
                 Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
             }
+        });
+
+        // Observe favorite IDs changes to refresh adapter
+        viewModel.favoriteIds.observe(getViewLifecycleOwner(), favoriteIds -> {
+            adapter.notifyDataSetChanged();
         });
     }
 
