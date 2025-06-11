@@ -16,12 +16,14 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.wallpaper.R;
 import com.example.wallpaper.databinding.ActivityWallpaperViewerBinding;
+import com.example.wallpaper.ui.viewmodel.WallpaperViewerViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -33,6 +35,7 @@ public class WallpaperViewerActivity extends AppCompatActivity {
     private static final int REQUEST_CROP_WALLPAPER = 1001;
     
     private ActivityWallpaperViewerBinding binding;
+    private WallpaperViewerViewModel viewModel;
     private String wallpaperPath;
     private String wallpaperId;
     private Bitmap currentBitmap;
@@ -58,8 +61,12 @@ public class WallpaperViewerActivity extends AppCompatActivity {
             return insets;
         });
         
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(WallpaperViewerViewModel.class);
+        
         getIntentData();
         setupUI();
+        setupObservers();
         loadWallpaper();
     }
     
@@ -71,14 +78,51 @@ public class WallpaperViewerActivity extends AppCompatActivity {
         if (wallpaperPath == null || wallpaperPath.isEmpty()) {
             Toast.makeText(this, "Error: Invalid wallpaper", Toast.LENGTH_SHORT).show();
             finish();
+            return;
         }
+        
+        // Set wallpaper info in ViewModel
+        viewModel.setWallpaperInfo(wallpaperId, wallpaperPath);
     }
     
     private void setupUI() {
         setSupportActionBar(binding.toolbar); 
         binding.toolbar.setNavigationOnClickListener(v -> finish());
-        binding.setWallpaperFab.setOnClickListener(v -> setWallpaper());
+        
+        // Set up button click listeners for the new BottomAppBar
+        binding.infoButton.setOnClickListener(v -> showWallpaperInfo());
+        binding.favoriteButton.setOnClickListener(v -> viewModel.toggleFavorite());
+        binding.saveButton.setOnClickListener(v -> viewModel.saveToDevice());
+        
+        // Set up Apply Wallpaper Button
+        binding.applyWallpaperButton.setOnClickListener(v -> setWallpaper());
+        
         binding.progressBar.setVisibility(View.VISIBLE);
+        
+        // Show/hide save button based on wallpaper source
+        binding.saveButton.setVisibility(viewModel.shouldShowSaveButton() ? View.VISIBLE : View.GONE);
+    }
+    
+    private void setupObservers() {
+        viewModel.isFavorite.observe(this, isFavorite -> {
+            updateFavoriteButton(isFavorite);
+        });
+        
+        viewModel.error.observe(this, error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    
+    private void updateFavoriteButton(Boolean isFavorite) {
+        if (isFavorite != null && isFavorite) {
+            binding.favoriteButton.setIcon(getDrawable(R.drawable.ic_favorite_filled_red));
+            binding.favoriteButton.setContentDescription(getString(R.string.remove_from_favorites));
+        } else {
+            binding.favoriteButton.setIcon(getDrawable(R.drawable.ic_favorite_border));
+            binding.favoriteButton.setContentDescription(getString(R.string.add_to_favorites));
+        }
     }
     
     private void loadWallpaper() {
@@ -91,7 +135,8 @@ public class WallpaperViewerActivity extends AppCompatActivity {
                         currentBitmap = resource;
                         binding.wallpaperImageView.setImageBitmap(resource);
                         binding.progressBar.setVisibility(View.GONE);
-                        binding.setWallpaperFab.setVisibility(View.VISIBLE);
+                        binding.bottomActionContainer.setVisibility(View.VISIBLE);
+                        binding.applyWallpaperButton.setVisibility(View.VISIBLE);
                     }
                     
                     @Override
@@ -106,6 +151,13 @@ public class WallpaperViewerActivity extends AppCompatActivity {
                         Toast.makeText(WallpaperViewerActivity.this, "Failed to load wallpaper", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+    
+    private void showWallpaperInfo() {
+        // Show wallpaper info dialog or sheet
+        // For now, just show a simple toast
+        String info = String.format("Wallpaper ID: %s\nPath: %s", wallpaperId, wallpaperPath);
+        Toast.makeText(this, info, Toast.LENGTH_LONG).show();
     }
     
     private void setWallpaper() {

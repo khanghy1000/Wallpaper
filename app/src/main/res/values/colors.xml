@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Bottom App Bar -->
+    <color name="bottom_app_bar_background">#CC000000</color> <!-- Semi-transparent black -->
 </resources>

@@ -46,4 +46,9 @@ public class LocalWallpaper implements FavoriteWallpaper {
     public String getThumbUrl() {
         return uri != null ? uri.toString() : null;
     }
+
+    @Override
+    public String getMainImgUrl() {
+        return uri != null ? uri.toString() : null; // Use the URI as the URL for local wallpapers
+    }
 }

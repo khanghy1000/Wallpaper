@@ -66,11 +66,16 @@ public class CollectionsFragment extends Fragment {
         adapter.setOnFavoriteWallpaperClickListener(new FavoriteWallpaperAdapter.OnFavoriteWallpaperClickListener() {
             @Override
             public void onFavoriteWallpaperClick(FavoriteWallpaper wallpaper) {
-                // For now, since we don't have full wallpaper data, we'll show a toast
-                // In a full implementation, you'd navigate to the wallpaper viewer
-                Toast.makeText(requireContext(), 
-                    "Favorite wallpaper clicked: " + wallpaper.getSourceId(), 
-                    Toast.LENGTH_SHORT).show();
+                String wallpaperPath = wallpaper.getMainImgUrl();
+                String wallpaperId = wallpaper.getSourceId();
+
+                if (wallpaperPath != null && !wallpaperPath.isEmpty()) {
+                    WallpaperViewerActivity.start(requireContext(), wallpaperPath, wallpaperId);
+                } else {
+                    Toast.makeText(requireContext(), 
+                        "Cannot open wallpaper: Invalid path", 
+                        Toast.LENGTH_SHORT).show();
+                }
             }
         });
         

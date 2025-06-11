@@ -91,4 +91,14 @@ public class NetworkWallhavenWallpaper implements FavoriteWallpaper {
     public String getThumbUrl() {
         return thumbs != null ? thumbs.getOriginal() : null;
     }
+
+    @Override
+    public String getMainImgUrl() {
+        return path;
+    }
+
+    @Override
+    public float getRatio() {
+        return ratio;
+    }
 }

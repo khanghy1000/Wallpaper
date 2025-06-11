@@ -36,16 +36,20 @@ public class FavoriteEntity {
     
     @ColumnInfo(name = "thumb_url")
     private String thumbUrl; // URL for wallpaper thumbnail
+
+    @ColumnInfo(name = "main_img_url")
+    private String mainImgUrl; // URL for the wallpaper image
     
     private float ratio; // width/height ratio for proper display
     
     @Ignore
-    public FavoriteEntity(long id, String sourceId, String source, long favoritedOn, String thumbUrl, float ratio) {
+    public FavoriteEntity(long id, String sourceId, String source, long favoritedOn, String thumbUrl, String mainImgUrl, float ratio) {
         this.id = id;
         this.sourceId = sourceId;
         this.source = source;
         this.favoritedOn = favoritedOn;
         this.thumbUrl = thumbUrl;
+        this.mainImgUrl = mainImgUrl;
         this.ratio = ratio;
     }
 }

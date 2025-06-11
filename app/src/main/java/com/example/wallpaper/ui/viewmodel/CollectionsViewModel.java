@@ -109,6 +109,11 @@ public class CollectionsViewModel extends ViewModel {
         public String getThumbUrl() {
             return entity.getThumbUrl();
         }
+
+        @Override
+        public String getMainImgUrl() {
+            return entity.getMainImgUrl();
+        }
         
         @Override
         public float getRatio() {
