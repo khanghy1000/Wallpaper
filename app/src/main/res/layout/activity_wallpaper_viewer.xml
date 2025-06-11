@@ -75,7 +75,7 @@
                 android:layout_marginEnd="8dp"
                 android:contentDescription="@string/add_to_favorites"
                 app:icon="@drawable/ic_favorite_border"
-                app:iconTint="?attr/colorOnSurface"
+                app:iconTint="@null"
                 app:backgroundTint="@android:color/transparent"
                 app:rippleColor="?attr/colorControlHighlight" />
 
