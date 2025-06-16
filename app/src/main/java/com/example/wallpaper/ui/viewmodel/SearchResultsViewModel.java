@@ -53,7 +53,6 @@ public class SearchResultsViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _showResults = new MutableLiveData<>(false);
     public final LiveData<Boolean> showResults = _showResults;
 
-    // Track favorite wallpaper IDs for quick checking
     private final MutableLiveData<List<String>> _favoriteIds = new MutableLiveData<>(new ArrayList<>());
     public final LiveData<List<String>> favoriteIds = _favoriteIds;
 
@@ -74,7 +73,6 @@ public class SearchResultsViewModel extends ViewModel {
                                 String minWidth, String minHeight, List<String> resolutions,
                                 List<WallhavenRatio> ratios, WallhavenTopRange topRange) {
         
-        // Build search filters
         WallhavenFilters filters = new WallhavenFilters();
         
         // Handle tags
@@ -108,7 +106,7 @@ public class SearchResultsViewModel extends ViewModel {
             filters.setOrder(order);
         }
         
-        // Set top range if sorting is TOPLIST and a valid top range was provided
+        // Set top range if sorting is TOPLIST
         if (sorting == WallhavenSorting.TOPLIST && topRange != null) {
             filters.setTopRange(topRange);
         }
@@ -146,7 +144,6 @@ public class SearchResultsViewModel extends ViewModel {
             filters.setRatios(new HashSet<>(ratios));
         }
         
-        // Build search object
         WallhavenSearch search = new WallhavenSearch();
         
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -324,7 +321,7 @@ public class SearchResultsViewModel extends ViewModel {
         // Set default order: Descending
         filters.setOrder(Order.DESC);
         
-        // Set default top range: One Month (even though it won't be used unless sorting is TOPLIST)
+        // Set default top range: One Month
         filters.setTopRange(WallhavenTopRange.ONE_MONTH);
         
         WallhavenSearch search = new WallhavenSearch();
@@ -340,8 +337,6 @@ public class SearchResultsViewModel extends ViewModel {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     () -> {
-                        // Success - favorite toggled
-                        // No need to reload favorite IDs manually since we're observing changes
                     },
                     throwable -> {
                         _error.setValue("Failed to toggle favorite: " + throwable.getMessage());
@@ -371,7 +366,6 @@ public class SearchResultsViewModel extends ViewModel {
                         _favoriteIds.setValue(favoriteIds);
                     },
                     throwable -> {
-                        // Handle error silently for favorite loading
                     }
                 )
         );

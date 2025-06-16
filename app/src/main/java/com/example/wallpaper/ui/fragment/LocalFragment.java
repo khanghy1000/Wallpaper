@@ -38,7 +38,6 @@ public class LocalFragment extends Fragment {
     private LocalWallpaperAdapter adapter;
 
     public LocalFragment() {
-        // Required empty public constructor
     }
 
     public static LocalFragment newInstance() {
@@ -70,27 +69,21 @@ public class LocalFragment extends Fragment {
     private void setupRecyclerView() {
         adapter = new LocalWallpaperAdapter();
         
-        // Setup masonry layout with 2 columns for optimal masonry effect
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
-        // Prevent items from moving between spans to reduce layout shifts
         layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
         
         binding.recyclerView.setLayoutManager(layoutManager);
         binding.recyclerView.setAdapter(adapter);
         
-        // Disable item animator to prevent visual glitches during scrolling
         binding.recyclerView.setItemAnimator(null);
         
-        // Set wallpaper click listener
         adapter.setOnWallpaperClickListener(new LocalWallpaperAdapter.OnWallpaperClickListener() {
             @Override
             public void onWallpaperClick(LocalWallpaper wallpaper) {
-                // Navigate to wallpaper viewer with local image URI
                 WallpaperViewerActivity.start(requireContext(), wallpaper.getUri().toString(), wallpaper.getId());
             }
         });
         
-        // Set favorite click listener
         adapter.setOnFavoriteClickListener(new LocalWallpaperAdapter.OnFavoriteClickListener() {
             @Override
             public void onFavoriteClick(LocalWallpaper wallpaper) {
@@ -98,7 +91,6 @@ public class LocalFragment extends Fragment {
             }
         });
         
-        // Set favorite checker
         adapter.setFavoriteChecker(new LocalWallpaperAdapter.FavoriteChecker() {
             @Override
             public boolean isFavorite(LocalWallpaper wallpaper) {
@@ -137,7 +129,6 @@ public class LocalFragment extends Fragment {
             }
         });
 
-        // Observe favorite IDs changes to refresh adapter
         viewModel.favoriteIds.observe(getViewLifecycleOwner(), favoriteIds -> {
             adapter.notifyDataSetChanged();
         });
@@ -183,10 +174,8 @@ public class LocalFragment extends Fragment {
         
         if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, load wallpapers
                 viewModel.loadLocalWallpapers();
             } else {
-                // Permission denied
                 Toast.makeText(getContext(), "Storage permission is required to view local wallpapers", Toast.LENGTH_LONG).show();
                 updateEmptyState(true);
             }

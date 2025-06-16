@@ -51,7 +51,7 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Wall
     public void setWallpapers(List<NetworkWallhavenWallpaper> wallpapers) {
         List<NetworkWallhavenWallpaper> newWallpapers = wallpapers != null ? wallpapers : new ArrayList<>();
         
-        // Only update if the data has actually changed to prevent unnecessary refreshes
+        // Only update if the data has actually changed
         if (!this.wallpapers.equals(newWallpapers)) {
             this.wallpapers = newWallpapers;
             notifyDataSetChanged();
@@ -120,13 +120,11 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Wall
             
             binding.wallpaperImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
             
-            // Load image with Glide
             Glide.with(binding.wallpaperImage.getContext())
                     .load(wallpaper.getThumbs().getOriginal())
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(binding.wallpaperImage);
             
-            // Setup favorite button
             boolean isFavorite = favoriteChecker != null && favoriteChecker.isFavorite(wallpaper);
             if (isFavorite) {
                 binding.favoriteButton.setImageResource(com.example.wallpaper.R.drawable.ic_favorite_filled_red);
@@ -136,7 +134,6 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Wall
                 binding.favoriteButton.setContentDescription("Add to favorites");
             }
             
-            // Set click listeners
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onWallpaperClick(wallpaper);

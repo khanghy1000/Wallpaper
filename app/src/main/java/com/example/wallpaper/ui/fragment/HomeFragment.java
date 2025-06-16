@@ -34,7 +34,6 @@ public class HomeFragment extends Fragment {
     private HomeAdapter adapter;
 
     public HomeFragment() {
-        // Required empty public constructor
     }
 
     public static HomeFragment newInstance() {
@@ -66,27 +65,21 @@ public class HomeFragment extends Fragment {
     private void setupRecyclerView() {
         adapter = new HomeAdapter();
         
-        // Setup masonry layout with 2 columns for optimal masonry effect
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
-        // Prevent items from moving between spans to reduce layout shifts
         layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
         
         binding.recyclerView.setLayoutManager(layoutManager);
         binding.recyclerView.setAdapter(adapter);
         
-        // Disable item animator to prevent visual glitches during scrolling
         binding.recyclerView.setItemAnimator(null);
         
-        // Set wallpaper click listener
         adapter.setOnWallpaperClickListener(new HomeAdapter.OnWallpaperClickListener() {
             @Override
             public void onWallpaperClick(NetworkWallhavenWallpaper wallpaper) {
-                // Navigate to wallpaper viewer
                 WallpaperViewerActivity.start(requireContext(), wallpaper.getPath(), wallpaper.getId());
             }
         });
         
-        // Set tag click listener
         adapter.setOnTagClickListener(new HomeAdapter.OnTagClickListener() {
             @Override
             public void onTagClick(NetworkWallhavenTag tag) {
@@ -96,7 +89,6 @@ public class HomeFragment extends Fragment {
             }
         });
         
-        // Set favorite click listener
         adapter.setOnFavoriteClickListener(new HomeAdapter.OnFavoriteClickListener() {
             @Override
             public void onFavoriteClick(NetworkWallhavenWallpaper wallpaper) {
@@ -104,7 +96,6 @@ public class HomeFragment extends Fragment {
             }
         });
         
-        // Set favorite checker
         adapter.setFavoriteChecker(new HomeAdapter.FavoriteChecker() {
             @Override
             public boolean isFavorite(NetworkWallhavenWallpaper wallpaper) {
@@ -126,7 +117,7 @@ public class HomeFragment extends Fragment {
                         int lastVisibleItem = Math.max(lastVisibleItemPositions[0], lastVisibleItemPositions[1]);
                         int totalItemCount = layoutManager.getItemCount();
                         
-                        // Load more when we're near the end (5 items before the end)
+                        // Load more when near the end (5 items before the end)
                         if (lastVisibleItem >= totalItemCount - 5 && 
                             !Boolean.TRUE.equals(viewModel.loading.getValue()) &&
                             !Boolean.TRUE.equals(viewModel.loadingMore.getValue())) {
@@ -146,17 +137,14 @@ public class HomeFragment extends Fragment {
 
     private void setupSearchFab() {
         binding.fabSearch.setOnClickListener(v -> {
-            // Navigate to SearchFilterActivity
             startActivity(SearchFilterActivity.newIntent(requireContext()));
         });
     }
 
     private void observeViewModel() {
         viewModel.wallpapers.observe(getViewLifecycleOwner(), wallpapers -> {
-            // Always use setWallpapers - the adapter will now handle pagination vs refresh intelligently
             adapter.setWallpapers(wallpapers);
             
-            // Only scroll to top for complete refresh (when it's the first load or after refresh)
             if (Boolean.TRUE.equals(viewModel.loading.getValue()) && wallpapers != null && !wallpapers.isEmpty()) {
                 binding.recyclerView.scrollToPosition(0);
             }
@@ -179,16 +167,12 @@ public class HomeFragment extends Fragment {
         });
 
         viewModel.loadingMore.observe(getViewLifecycleOwner(), loadingMore -> {
-            // You can add a loading indicator at the bottom if needed
-            // For now, we just observe it to prevent multiple simultaneous requests
         });
 
         viewModel.loadingTags.observe(getViewLifecycleOwner(), loadingTags -> {
-            // You can add a loading indicator for tags if needed
         });
 
         viewModel.favoriteIds.observe(getViewLifecycleOwner(), favoriteIds -> {
-            // When favorite IDs change, notify the adapter to refresh favorite icons
             adapter.notifyDataSetChanged();
         });
 

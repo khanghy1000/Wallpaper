@@ -92,12 +92,12 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.wallpapers = newWallpapers;
         
         if (isPagination) {
-            // This is pagination - just add the new items
+            // Just add the new items
             int startPosition = (showPopularTags ? 1 : 0) + oldSize;
             int addedCount = newSize - oldSize;
             notifyItemRangeInserted(startPosition, addedCount);
         } else {
-            // This is a complete refresh - use notifyDataSetChanged only for wallpapers section
+            // Use notifyDataSetChanged only for wallpapers section
             if (oldSize == 0 && newSize > 0) {
                 // First load
                 int startPosition = showPopularTags ? 1 : 0;
@@ -107,7 +107,7 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 int startPosition = showPopularTags ? 1 : 0;
                 notifyItemRangeRemoved(startPosition, oldSize);
             } else {
-                // Complete refresh - but only notify wallpaper items, not the header
+                // Complete refresh - notify wallpaper items, not the header
                 int startPosition = showPopularTags ? 1 : 0;
                 if (oldSize > 0) {
                     notifyItemRangeRemoved(startPosition, oldSize);
@@ -123,9 +123,8 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         List<NetworkWallhavenTag> newTags = tags != null ? tags : new ArrayList<>();
         boolean shouldShow = !newTags.isEmpty();
         
-        // Check if tags actually changed to avoid unnecessary updates
         if (this.popularTags.equals(newTags) && showPopularTags == shouldShow) {
-            return; // No change needed
+            return;
         }
         
         this.popularTags = newTags;
@@ -225,7 +224,7 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public void bind(List<NetworkWallhavenTag> tags) {
             // Only update if tags have actually changed
             if (tags.equals(lastBoundTags)) {
-                return; // No change needed
+                return;
             }
             
             lastBoundTags = new ArrayList<>(tags);
@@ -244,7 +243,6 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 chip.setClickable(true);
                 chip.setFocusable(true);
                 
-                // Remove close icon and make it non-checkable
                 chip.setCloseIconVisible(false);
                 chip.setCheckable(false);
                 
@@ -289,13 +287,11 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             
             binding.wallpaperImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
             
-            // Load image with Glide
             Glide.with(binding.wallpaperImage.getContext())
                     .load(wallpaper.getThumbs().getOriginal())
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(binding.wallpaperImage);
             
-            // Setup favorite button
             boolean isFavorite = favoriteChecker != null && favoriteChecker.isFavorite(wallpaper);
             if (isFavorite) {
                 binding.favoriteButton.setImageResource(com.example.wallpaper.R.drawable.ic_favorite_filled_red);
@@ -305,7 +301,6 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 binding.favoriteButton.setContentDescription("Add to favorites");
             }
             
-            // Set click listeners
             binding.getRoot().setOnClickListener(v -> {
                 if (wallpaperClickListener != null) {
                     wallpaperClickListener.onWallpaperClick(wallpaper);

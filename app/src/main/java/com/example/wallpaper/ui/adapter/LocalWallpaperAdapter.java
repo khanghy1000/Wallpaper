@@ -113,13 +113,11 @@ public class LocalWallpaperAdapter extends RecyclerView.Adapter<LocalWallpaperAd
             
             binding.wallpaperImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
             
-            // Load image with Glide using the URI
             Glide.with(binding.wallpaperImage.getContext())
                     .load(wallpaper.getUri())
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(binding.wallpaperImage);
             
-            // Setup favorite button
             boolean isFavorite = favoriteChecker != null && favoriteChecker.isFavorite(wallpaper);
             if (isFavorite) {
                 binding.favoriteButton.setImageResource(com.example.wallpaper.R.drawable.ic_favorite_filled_red);
@@ -129,7 +127,6 @@ public class LocalWallpaperAdapter extends RecyclerView.Adapter<LocalWallpaperAd
                 binding.favoriteButton.setContentDescription("Add to favorites");
             }
             
-            // Set click listeners
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onWallpaperClick(wallpaper);

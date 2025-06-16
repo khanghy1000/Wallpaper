@@ -135,14 +135,12 @@ public class WallpaperViewerViewModel extends AndroidViewModel {
                         // Use the complete wallpaper data
                         performToggleFavorite(response.getData());
                     } else {
-                        // Show error if no data received
                         _error.setValue("Failed to fetch wallpaper info: No data received");
                     }
                 }
                 
                 @Override
                 public void onError(String error) {
-                    // Show error message and don't create fallback
                     _error.setValue("Failed to fetch wallpaper info: " + error);
                 }
             });
@@ -162,8 +160,6 @@ public class WallpaperViewerViewModel extends AndroidViewModel {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     () -> {
-                        // Success - favorite status will be updated automatically
-                        // through the observer in checkIfFavorite
                         checkIfFavorite();
                     },
                     throwable -> {
@@ -191,21 +187,16 @@ public class WallpaperViewerViewModel extends AndroidViewModel {
             Uri uri = Uri.parse(wallpaperPath);
             DownloadManager.Request request = new DownloadManager.Request(uri);
             
-            // Set download title and description
             request.setTitle("Wallpaper Download");
             request.setDescription("Downloading wallpaper...");
             
-            // Set destination directory
             String fileName = "wallpaper_" + wallpaperId + ".jpg";
             request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
             
-            // Set notification visibility
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             
-            // Allow download over WiFi and mobile data
             request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
             
-            // Enqueue the download
             downloadManager.enqueue(request);
             
         } catch (Exception e) {

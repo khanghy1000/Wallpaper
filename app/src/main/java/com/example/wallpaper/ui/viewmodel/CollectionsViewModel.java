@@ -72,7 +72,6 @@ public class CollectionsViewModel extends ViewModel {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     () -> {
-                        // No need to manually reload - the observer will handle updates automatically
                     },
                     throwable -> {
                         _error.setValue("Failed to toggle favorite: " + throwable.getMessage());
@@ -87,7 +86,6 @@ public class CollectionsViewModel extends ViewModel {
         disposables.clear();
     }
     
-    // Simple implementation class for FavoriteWallpaper interface
     private static class FavoriteWallpaperImpl implements FavoriteWallpaper {
         private final FavoriteEntity entity;
         

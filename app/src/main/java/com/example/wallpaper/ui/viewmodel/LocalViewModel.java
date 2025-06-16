@@ -38,7 +38,7 @@ public class LocalViewModel extends AndroidViewModel {
     private final MutableLiveData<String> _error = new MutableLiveData<>();
     public final LiveData<String> error = _error;
     
-    // Track favorite wallpaper IDs for quick checking
+    // Track favorite wallpaper IDs
     private final MutableLiveData<List<String>> _favoriteIds = new MutableLiveData<>(new ArrayList<>());
     public final LiveData<List<String>> favoriteIds = _favoriteIds;
     
@@ -76,8 +76,6 @@ public class LocalViewModel extends AndroidViewModel {
             favoritesRepository.toggleFavorite(wallpaper)
                 .subscribe(
                     () -> {
-                        // Success - favorite toggled
-                        // No need to reload favorite IDs manually since we're observing changes
                     },
                     throwable -> {
                         _error.postValue("Error toggling favorite: " + throwable.getMessage());
@@ -105,7 +103,6 @@ public class LocalViewModel extends AndroidViewModel {
                         _favoriteIds.postValue(favoriteIds);
                     },
                     throwable -> {
-                        // Handle error silently for favorite loading
                     }
                 )
         );

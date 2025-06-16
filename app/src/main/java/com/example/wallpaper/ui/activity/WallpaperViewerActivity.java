@@ -77,7 +77,6 @@ public class WallpaperViewerActivity extends AppCompatActivity {
             return insets;
         });
         
-        // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(WallpaperViewerViewModel.class);
         
         getIntentData();
@@ -100,7 +99,6 @@ public class WallpaperViewerActivity extends AppCompatActivity {
             return;
         }
         
-        // Set wallpaper info in ViewModel
         viewModel.setWallpaperInfo(wallpaperId, wallpaperPath);
     }
     
@@ -108,17 +106,14 @@ public class WallpaperViewerActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar); 
         binding.toolbar.setNavigationOnClickListener(v -> finish());
         
-        // Set up button click listeners for the new BottomAppBar
         binding.infoButton.setOnClickListener(v -> showWallpaperInfo());
         binding.favoriteButton.setOnClickListener(v -> viewModel.toggleFavorite());
         binding.saveButton.setOnClickListener(v -> viewModel.saveToDevice());
-        
-        // Set up Apply Wallpaper Button
         binding.applyWallpaperButton.setOnClickListener(v -> setWallpaper());
         
         binding.progressBar.setVisibility(View.VISIBLE);
         
-        // Show/hide save button based on wallpaper source
+        // Hide save button if local
         binding.saveButton.setVisibility(viewModel.shouldShowSaveButton() ? View.VISIBLE : View.GONE);
     }
     
@@ -160,7 +155,6 @@ public class WallpaperViewerActivity extends AppCompatActivity {
                     
                     @Override
                     public void onLoadCleared(@Nullable Drawable placeholder) {
-                        // Handle cleanup if needed
                     }
                     
                     @Override
@@ -173,7 +167,6 @@ public class WallpaperViewerActivity extends AppCompatActivity {
     }
     
     private void showWallpaperInfo() {
-        // Only show bottom sheet if it's ready and currently hidden
         if (isBottomSheetReady && bottomSheetBehavior != null && bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
@@ -183,24 +176,19 @@ public class WallpaperViewerActivity extends AppCompatActivity {
         View bottomSheet = findViewById(R.id.bottomSheetContent);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
         
-        // Configure bottom sheet behavior
         bottomSheetBehavior.setHideable(true);
         bottomSheetBehavior.setSkipCollapsed(true);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         
-        // Mark bottom sheet as ready
         isBottomSheetReady = true;
         
-        // Add bottom sheet callback to handle state changes
         bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                // Handle state changes if needed
             }
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                // Handle slide changes if needed
             }
         });
     }
@@ -215,7 +203,6 @@ public class WallpaperViewerActivity extends AppCompatActivity {
                      bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED)) {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                 } else {
-                    // Allow normal back press behavior
                     setEnabled(false);
                     getOnBackPressedDispatcher().onBackPressed();
                 }
@@ -225,14 +212,12 @@ public class WallpaperViewerActivity extends AppCompatActivity {
     }
     
     private void observeWallpaperInfo() {
-        // Observe network wallpaper info
         viewModel.networkWallpaperInfo.observe(this, networkWallpaper -> {
             if (networkWallpaper != null) {
                 populateNetworkWallpaperInfo(networkWallpaper);
             }
         });
         
-        // Observe local wallpaper info
         viewModel.localWallpaperInfo.observe(this, localWallpaper -> {
             if (localWallpaper != null) {
                 populateLocalWallpaperInfo(localWallpaper);
@@ -253,7 +238,6 @@ public class WallpaperViewerActivity extends AppCompatActivity {
             bottomSheetBinding.tagsContainer.setVisibility(View.GONE);
         }
         
-        // Use the source from the wallpaper data instead of hardcoded 'Wallhaven'
         bottomSheetBinding.sourceText.setText(wallpaper.getSourceUrl());
         bottomSheetBinding.imageUrlText.setText(wallpaper.getPath());
         
@@ -275,7 +259,7 @@ public class WallpaperViewerActivity extends AppCompatActivity {
         Chip uploaderChip = bottomSheetBinding.uploaderChip;
         uploaderChip.setText(uploader.getUsername());
         
-        // Set avatar if available
+        // Set avatar
         if (uploader.getAvatar() != null && !uploader.getAvatar().isEmpty()) {
             String avatarUrl = null;
             if (uploader.getAvatar().containsKey("128px")) {
@@ -319,11 +303,9 @@ public class WallpaperViewerActivity extends AppCompatActivity {
     }
     
     private void populateLocalWallpaperInfo(LocalWallpaper wallpaper) {
-        // Show local info container, hide network info container
         bottomSheetBinding.localInfoContainer.setVisibility(View.VISIBLE);
         bottomSheetBinding.networkInfoContainer.setVisibility(View.GONE);
         
-        // Populate local wallpaper data
         bottomSheetBinding.localLocationText.setText(wallpaper.getPath());
         bottomSheetBinding.localResolutionText.setText(wallpaper.getResolution());
         bottomSheetBinding.localSizeText.setText(Formatter.formatFileSize(this, wallpaper.getFileSize()));
@@ -343,16 +325,13 @@ public class WallpaperViewerActivity extends AppCompatActivity {
     }
     
     private void openSearchForTag(String tagName) {
-        // Close bottom sheet first
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         
-        // Open SearchFilterActivity with the tag pre-filled
         Intent intent = SearchFilterActivity.newIntentWithTag(this, tagName);
         startActivity(intent);
     }
     
     private void openSearchForUploader(String username) {
-        // Close bottom sheet first
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         
         Intent intent = SearchFilterActivity.newIntentWithSearchQuery(this, "@" + username);
@@ -388,7 +367,6 @@ public class WallpaperViewerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Clean up the back pressed callback
         if (onBackPressedCallback != null) {
             onBackPressedCallback.remove();
         }

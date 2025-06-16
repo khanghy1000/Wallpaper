@@ -89,12 +89,10 @@ public class FavoriteWallpaperAdapter extends RecyclerView.Adapter<FavoriteWallp
         }
 
         public void bind(FavoriteWallpaper wallpaper) {
-            // Calculate and set dimensions
             float ratio = wallpaper.getRatio();
             int width = getItemWidth(binding.getRoot());
             int height = (int) (width / ratio);
 
-            // Set layout params
             ViewGroup.LayoutParams layoutParams = binding.wallpaperImage.getLayoutParams();
             layoutParams.height = height;
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -102,7 +100,7 @@ public class FavoriteWallpaperAdapter extends RecyclerView.Adapter<FavoriteWallp
 
             binding.wallpaperImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-            // Load image placeholder or thumb URL if available
+            // Load image placeholder or thumb URL
             String thumbUrl = wallpaper.getThumbUrl();
             if (thumbUrl != null && !thumbUrl.isEmpty()) {
                 Glide.with(binding.wallpaperImage.getContext())
@@ -114,11 +112,9 @@ public class FavoriteWallpaperAdapter extends RecyclerView.Adapter<FavoriteWallp
                 binding.wallpaperImage.setImageResource(android.R.drawable.ic_menu_gallery);
             }
 
-            // Set favorite button to filled red state (since all items in this adapter are favorites)
             binding.favoriteButton.setImageResource(com.example.wallpaper.R.drawable.ic_favorite_filled_red);
             binding.favoriteButton.setContentDescription("Remove from favorites");
 
-            // Set click listeners
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onFavoriteWallpaperClick(wallpaper);

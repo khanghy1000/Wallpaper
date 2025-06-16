@@ -104,12 +104,10 @@ public class SearchResultsActivity extends AppCompatActivity {
             WallpaperViewerActivity.start(this, wallpaper.getPath(), wallpaper.getId())
         );
         
-        // Set favorite click listener
         adapter.setOnFavoriteClickListener(wallpaper -> {
             viewModel.toggleFavorite(wallpaper);
         });
         
-        // Set favorite checker
         adapter.setFavoriteChecker(wallpaper -> {
             return viewModel.isFavorite(wallpaper);
         });
@@ -127,7 +125,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                         int lastVisibleItem = Math.max(lastVisibleItemPositions[0], lastVisibleItemPositions[1]);
                         int totalItemCount = layoutManager.getItemCount();
 
-                        // Load more when we're near the end (5 items before the end)
+                        // Load more when near the end (5 items before the end)
                         if (lastVisibleItem >= totalItemCount - 5 &&
                                 !Boolean.TRUE.equals(viewModel.loading.getValue()) &&
                                 !Boolean.TRUE.equals(viewModel.loadingMore.getValue())) {
@@ -143,8 +141,6 @@ public class SearchResultsActivity extends AppCompatActivity {
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
         binding.btnFilter.setOnClickListener(v -> {
-            // Go back to filter activity with current search data
-            // You could also pass current filters back to maintain state
             finish();
         });
 
@@ -167,7 +163,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         });
 
         viewModel.loading.observe(this, loading -> {
-            // Show center loading indicator only if not doing swipe refresh AND wallpapers is null
+            // Show center loading indicator only if not doing swipe refresh and wallpapers is null
             boolean isLoadingState = loading && !isSwipeRefreshing && viewModel.wallpapers.getValue() == null;
             if (isLoadingState) {
                 binding.progressIndicator.setIndeterminate(true);
@@ -186,7 +182,6 @@ public class SearchResultsActivity extends AppCompatActivity {
         });
 
         viewModel.loadingMore.observe(this, loadingMore -> {
-            // You can add a loading indicator at the bottom if needed
         });
 
         viewModel.error.observe(this, error -> {
@@ -216,13 +211,11 @@ public class SearchResultsActivity extends AppCompatActivity {
         ArrayList<String> resolutions = (ArrayList<String>) intent.getSerializableExtra("resolutions");
         ArrayList<WallhavenRatio> ratios = intent.getParcelableArrayListExtra("ratios");
 
-        // Perform the search
         viewModel.searchWallpapers(keyword, tags, categories, purities, sorting, order,
                 minWidth, minHeight, resolutions, ratios, topRange);
     }
 
     private void updateUIState(boolean isEmpty) {
-        // Check if wallpapers is null (loading state)
         List<NetworkWallhavenWallpaper> wallpapers = viewModel.wallpapers.getValue();
         if (wallpapers == null) {
             // Loading state - hide both empty state and RecyclerView, center loading will show

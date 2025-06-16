@@ -26,7 +26,6 @@ public class LocalWallpaperRepository {
         
         ContentResolver resolver = context.getContentResolver();
         
-        // Define the columns we want to retrieve
         String[] projection = {
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DISPLAY_NAME,
@@ -68,7 +67,6 @@ public class LocalWallpaperRepository {
                     String mimeType = cursor.getString(mimeTypeColumn);
                     long dateModified = cursor.getLong(dateModifiedColumn);
                     
-                    // Skip images that don't have proper dimensions
                     if (width <= 0 || height <= 0) {
                         continue;
                     }
@@ -101,7 +99,6 @@ public class LocalWallpaperRepository {
         return io.reactivex.rxjava3.core.Single.fromCallable(() -> {
             ContentResolver resolver = context.getContentResolver();
             
-            // Define the columns we want to retrieve
             String[] projection = {
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,

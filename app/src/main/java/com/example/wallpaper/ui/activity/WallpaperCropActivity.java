@@ -115,26 +115,22 @@ public class WallpaperCropActivity extends AppCompatActivity {
     }
     
     private void setupCropView(Bitmap bitmap) {
-        // Set up the crop view with the bitmap
         binding.cropImageView.setImageBitmap(bitmap);
         
-        // Get screen dimensions to set appropriate crop ratio
+        // Set crop ratio
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int screenWidth = displayMetrics.widthPixels;
         int screenHeight = displayMetrics.heightPixels;
         
-        // Set aspect ratio to match screen dimensions
         binding.cropImageView.setAspectRatio(screenWidth, screenHeight);
         binding.cropImageView.setFixedAspectRatio(true);
         
-        // Configure crop image view for better user experience
         binding.cropImageView.setGuidelines(CropImageView.Guidelines.ON);
         binding.cropImageView.setScaleType(CropImageView.ScaleType.CENTER_INSIDE);
         binding.cropImageView.setAutoZoomEnabled(true);
         binding.cropImageView.setMaxZoom(4);
         binding.cropImageView.setMultiTouchEnabled(true);
         
-        // Set crop shape to rectangle (default)
         binding.cropImageView.setCropShape(CropImageView.CropShape.RECTANGLE);
     }
     
@@ -145,7 +141,6 @@ public class WallpaperCropActivity extends AppCompatActivity {
         }
         
         try {
-            // Get the cropped bitmap from CropImageView
             Bitmap croppedBitmap = binding.cropImageView.getCroppedImage();
             
             if (croppedBitmap == null) {
@@ -153,7 +148,6 @@ public class WallpaperCropActivity extends AppCompatActivity {
                 return;
             }
             
-            // Set the wallpaper
             wallpaperManager.setBitmap(croppedBitmap, null, true, flag);
             
             String message;

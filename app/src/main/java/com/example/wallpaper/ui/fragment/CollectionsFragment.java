@@ -54,7 +54,6 @@ public class CollectionsFragment extends Fragment {
     private void setupRecyclerView() {
         adapter = new FavoriteWallpaperAdapter();
         
-        // Setup masonry layout with 2 columns
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
         
@@ -62,7 +61,6 @@ public class CollectionsFragment extends Fragment {
         binding.recyclerView.setAdapter(adapter);
         binding.recyclerView.setItemAnimator(null);
         
-        // Set click listeners
         adapter.setOnFavoriteWallpaperClickListener(new FavoriteWallpaperAdapter.OnFavoriteWallpaperClickListener() {
             @Override
             public void onFavoriteWallpaperClick(FavoriteWallpaper wallpaper) {

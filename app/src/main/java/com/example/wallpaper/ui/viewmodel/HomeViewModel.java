@@ -51,7 +51,7 @@ public class HomeViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _loadingTags = new MutableLiveData<>(false);
     public final LiveData<Boolean> loadingTags = _loadingTags;
     
-    // Track favorite wallpaper IDs for quick checking
+    // Track favorite wallpaper IDs
     private final MutableLiveData<List<String>> _favoriteIds = new MutableLiveData<>(new ArrayList<>());
     public final LiveData<List<String>> favoriteIds = _favoriteIds;
     
@@ -78,7 +78,6 @@ public class HomeViewModel extends ViewModel {
         currentPage = 1;
         hasMorePages = true;
         
-        // Create WallhavenSearch with default parameters and random sorting
         WallhavenFilters filters = new WallhavenFilters();
         filters.setSorting(WallhavenSorting.DATE_ADDED);
         filters.setOrder(Order.DESC);
@@ -117,7 +116,6 @@ public class HomeViewModel extends ViewModel {
         _loadingMore.setValue(true);
         _error.setValue(null);
         
-        // Create WallhavenSearch with default parameters and random sorting
         WallhavenFilters filters = new WallhavenFilters();
         filters.setSorting(WallhavenSorting.DATE_ADDED);
         filters.setOrder(Order.DESC);
@@ -172,14 +170,12 @@ public class HomeViewModel extends ViewModel {
             @Override
             public void onSuccess(List<NetworkWallhavenTag> tags) {
                 _loadingTags.setValue(false);
-                // Show all available tags
                 _popularTags.setValue(tags);
             }
             
             @Override
             public void onError(String error) {
                 _loadingTags.setValue(false);
-                // Don't show error for tags, just keep empty list
                 _popularTags.setValue(new ArrayList<>());
             }
         });
@@ -196,8 +192,6 @@ public class HomeViewModel extends ViewModel {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     () -> {
-                        // Success - favorite toggled
-                        // No need to reload favorite IDs manually since we're observing changes
                     },
                     throwable -> {
                         _error.setValue("Failed to toggle favorite: " + throwable.getMessage());
@@ -227,7 +221,6 @@ public class HomeViewModel extends ViewModel {
                         _favoriteIds.setValue(favoriteIds);
                     },
                     throwable -> {
-                        // Handle error silently for favorite loading
                     }
                 )
         );

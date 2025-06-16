@@ -26,7 +26,6 @@ public class MoreFragment extends Fragment {
     private MoreViewModel viewModel;
 
     public MoreFragment() {
-        // Required empty public constructor
     }
 
     public static MoreFragment newInstance() {
