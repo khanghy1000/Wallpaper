@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Dialog Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/theme"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Theme Options -->
+    <RadioGroup
+        android:id="@+id/radio_group_theme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- System Theme -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_system"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/theme_system"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:padding="12dp"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Light Theme -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/theme_light"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:padding="12dp"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Dark Theme -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_dark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/theme_dark"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:padding="12dp" />
+
+    </RadioGroup>
+
+</LinearLayout>

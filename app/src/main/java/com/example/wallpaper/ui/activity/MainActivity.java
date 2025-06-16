@@ -12,17 +12,25 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.wallpaper.R;
 import com.example.wallpaper.databinding.ActivityMainBinding;
 import com.example.wallpaper.ui.adapter.MainPagerAdapter;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
+import com.example.wallpaper.ui.common.ThemePreferenceManager;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
+    
+    @Inject
+    ThemePreferenceManager themePreferenceManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (themePreferenceManager != null) {
+            themePreferenceManager.initializeTheme();
+        }
+        
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 

@@ -75,4 +75,11 @@
     <string name="add_some_images_to_your_device">Add some images to your device to see them here</string>
     <string name="refresh_local_wallpapers">Refresh local wallpapers</string>
     <string name="local_wallpapers">Local Wallpapers</string>
+
+    <!-- Theme settings strings -->
+    <string name="theme">Theme</string>
+    <string name="theme_system">System Default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="open_theme_settings">Open theme settings</string>
 </resources>
